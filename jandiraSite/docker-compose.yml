@@ -1,0 +1,53 @@
+version: '3.8'
+networks:
+  webapp:
+    driver: bridge
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx:/etc/nginx:ro
+      - code_volume:/var/www/html:ro
+      - ./docker/logs/nginx:/var/log/nginx
+      - ./docker/nginx/letsencrypt:/etc/letsencrypt
+    depends_on:
+      - php
+    networks:
+      - webapp
+
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile-php
+    container_name: php
+    restart: unless-stopped
+    volumes:
+      - code_volume:/var/www/html
+    depends_on:
+      - postgres
+    networks:
+      - webapp
+
+  postgres:
+    image: postgres:15.4-alpine
+    container_name: postgres
+    restart: unless-stopped
+    volumes:
+      - ./docker/postgresql/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: strongpassword
+      POSTGRES_DB: jandiraDB
+    networks:
+      - webapp
+
+volumes:
+  code_volume:
