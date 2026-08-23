@@ -2,6 +2,10 @@
 
 @section('title', 'Início - Butique da Jandira')
 
+@push('styles')
+    @vite('resources/css/pages/home.css')
+@endpush
+
 @section('content')
 
     {{-- HERO --}}
@@ -23,7 +27,7 @@
                 </p>
 
                 <div class="mt-7 flex flex-wrap gap-3">
-                    <a href="#produtos" class="store-button-primary">
+                    <a href="{{ route('products.index') }}" class="store-button-primary">
                         Ver produtos
                     </a>
 
@@ -65,7 +69,7 @@
         <div class="grid gap-6 md:grid-cols-2">
 
             {{-- Casa --}}
-            <a href="#" class="store-category-card group">
+            <a href="{{ route('products.index', ['categorias' => 'casa']) }}" class="store-category-card group">
 
                 <div>
                     <span class="store-category-label">
@@ -94,7 +98,7 @@
 
 
             {{-- Perfumaria --}}
-            <a href="#" class="store-category-card group">
+            <a href="{{ route('products.index', ['categorias' => 'perfumaria']) }}" class="store-category-card group">
 
                 <div>
                     <span class="store-category-label">
@@ -146,7 +150,7 @@
                         Confira alguns dos produtos disponíveis.
                     </p>
                 </div>
-                <a href="#" class="store-view-all">
+                <a href="{{ route('products.index') }}" class="store-view-all">
                     Ver todos
                     <span aria-hidden="true">→</span>
                 </a>
@@ -201,13 +205,13 @@
                                     </span>
                                 @endif
 
-                                <button type="button" class="store-product-button">
+                                <a href="{{ route('products.show', $produto) }}" class="store-product-button">
                                     Ver produto
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </article>
-
+                    
                 @empty
 
                     <div class="col-span-full rounded-xl bg-white p-10 text-center">

@@ -28,8 +28,9 @@
             </a>
 
             {{-- Busca --}}
-            <form action="#" method="GET" class="store-search">
-                <input type="search" name="q" placeholder="O que você está procurando?" aria-label="Buscar produtos">
+            <form action="{{ route('products.index') }}" method="GET" class="store-search">
+
+                <input type="search" name="busca" value="{{ request('busca') }}" placeholder="Buscar produtos..." autocomplete="off">
 
                 <button type="submit" aria-label="Pesquisar">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -65,7 +66,7 @@
                     </a>
                 @endauth
 
-                <a href="#" class="store-action store-cart">
+                <a href="{{ route('cart.index') }}" class="store-action">
                     <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2">
                         <circle cx="9" cy="20" r="1"></circle>
@@ -74,8 +75,14 @@
                     </svg>
 
                     <span>Carrinho</span>
+                    @php
+                        $cartCount = collect(session('cart', []))->sum('quantity');
+                    @endphp
 
-                    <span class="store-cart-count">0</span>
+                    <span class="store-cart-count" {{ $cartCount === 0 ? 'hidden' : '' }} data-cart-count>
+                        {{ $cartCount }}
+                    </span>
+
                 </a>
 
             </div>
@@ -91,11 +98,11 @@
                     Início
                 </a>
 
-                <a href="#">
+                <a href="{{ route('products.index', ['categorias' => 'casa']) }}" class="{{ request('categoria') === 'casa' ? 'active' : '' }}">
                     Cama
                 </a>
-
-                <a href="#">
+                
+                <a href="{{ route('products.index', ['categorias' => 'perfumaria']) }}" class="{{ request('categoria') === 'perfumaria' ? 'active' : '' }}">
                     Perfumaria
                 </a>
 

@@ -1,0 +1,127 @@
+/* =========================================================
+   DETALHES DO PRODUTO
+   ========================================================= */
+
+.store-product-detail {
+    min-height: 70vh;
+    background: var(--color-background);
+}
+
+
+/* =========================================================
+   GALERIA
+   ========================================================= */
+
+.store-product-main-image {
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background:
+        linear-gradient(
+            135deg,
+            #f1ecea,
+            #e5dad6
+        );
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    color: #a48d94;
+    font-size: 13px;
+}
+
+.store-product-thumbnail {
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5efed;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: #a48d94;
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   DESTAQUE
+   ========================================================= */
+
+.store-product-featured {
+    display: inline-flex;
+    margin-top: 14px;
+    padding: 6px 12px;
+    background: var(--color-surface-soft);
+    border-radius: var(--radius-pill);
+    color: var(--color-primary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   VARIAÇÕES
+   ========================================================= */
+
+.store-variant-option {
+    min-width: 75px;
+    min-height: 42px;
+    padding-inline: 18px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+        border-color 0.2s ease,
+        color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.store-variant-option:hover {
+    border-color: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.store-variant-option.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.store-variant-option:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   PREÇO
+   ========================================================= */
+
+.store-product-detail-price {
+    color: var(--color-text);
+    font-size: 32px;
+    font-weight: 650;
+}
+
+
+/* =========================================================
+   ESTOQUE
+   ========================================================= */
+
+.store-stock-available,
+.store-stock-unavailable {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.store-stock-available {
+    color: var(--color-success);
+}
+
+.store-stock-unavailable {
+    color: var(--color-danger);
+}

@@ -1,0 +1,651 @@
+@import 'tailwindcss';
+
+/* =========================================================
+   BUTIQUE DA JANDIRA
+   Design System / Estilos globais
+   ========================================================= */
+
+:root {
+    /* Cores */
+    --color-primary: #8b3f59;
+    --color-primary-dark: #6e2f45;
+    --color-primary-light: #c98ca0;
+    --color-background: #fffdfb;
+    --color-page-soft: #faf7f5;
+    --color-surface: #ffffff;
+    --color-surface-soft: #f7efec;
+    --color-text: #322b2d;
+    --color-text-muted: #74686c;
+    --color-border: #eadeda;
+    --color-success: #4f7a59;
+    --color-danger: #a34c4c;
+
+    /* Espaçamentos */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+
+    /* Bordas */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 24px;
+    --radius-pill: 999px;
+
+    /* Sombras */
+    --shadow-sm: 0 4px 16px rgba(66, 44, 51, 0.04);
+    --shadow-md: 0 10px 30px rgba(66, 44, 51, 0.08);
+    --shadow-header: 0 2px 12px rgba(70, 43, 52, 0.06);
+
+    /* Layout */
+    --container-width: 1400px;
+}
+
+
+/* =========================================================
+   RESET / BASE
+   ========================================================= */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+
+    background: var(--color-background);
+    color: var(--color-text);
+
+    font-family:
+        "Figtree",
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    line-height: 1.5;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+
+/* =========================================================
+   LAYOUT GLOBAL
+   ========================================================= */
+
+.store-container {
+    width: min(calc(100% - 40px), var(--container-width));
+    margin-inline: auto;
+}
+
+
+/* =========================================================
+   COMPONENTES GLOBAIS
+   ========================================================= */
+
+.store-eyebrow {
+    display: inline-block;
+    color: var(--color-primary);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   BOTÕES
+   ========================================================= */
+
+.store-button-primary,
+.store-button-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding-inline: 22px;
+    border-radius: var(--radius-pill);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.store-button-primary {
+    background: var(--color-primary);
+    color: white;
+    box-shadow: 0 6px 20px rgba(139, 63, 89, 0.16);
+}
+
+.store-button-primary:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-1px);
+}
+
+.store-button-secondary {
+    background: transparent;
+    border: 1px solid var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.store-button-secondary:hover {
+    background: var(--color-surface-soft);
+}
+
+.store-button-primary:disabled,
+.store-button-primary.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.store-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-header);
+}
+
+
+/* Barra superior */
+
+.store-topbar {
+    background: var(--color-surface-soft);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.store-topbar-content {
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-lg);
+    color: var(--color-text-muted);
+    font-size: 13px;
+}
+
+.store-topbar-highlight {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+
+/* Cabeçalho principal */
+
+.store-main-header {
+    background: var(--color-surface);
+}
+
+.store-main-header-content {
+    min-height: 82px;
+    display: grid;
+    grid-template-columns: minmax(250px, 1fr) minmax(300px, 600px) minmax(250px, 1fr);
+    align-items: center;
+    gap: 35px;
+}
+
+
+/* =========================================================
+   LOGO
+   ========================================================= */
+
+.store-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    width: fit-content;
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.store-logo-symbol {
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 50%;
+    font-family: Georgia, serif;
+    font-size: 25px;
+    font-weight: 600;
+}
+
+.store-logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+.store-logo-text strong {
+    color: var(--color-primary-dark);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 21px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.store-logo-text span {
+    margin-top: 4px;
+    color: var(--color-text-muted);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   BUSCA
+   ========================================================= */
+
+.store-search {
+    position: relative;
+    width: 100%;
+}
+
+.store-search input {
+    width: 100%;
+    height: 44px;
+    padding: 0 52px 0 20px;
+    background: #faf8f7;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    color: var(--color-text);
+    font-size: 14px;
+    outline: none;
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.store-search input::placeholder {
+    color: #a79da0;
+}
+
+.store-search input:focus {
+    background: var(--color-surface);
+    border-color: var(--color-primary-light);
+    box-shadow: 0 0 0 3px rgba(139, 63, 89, 0.08);
+}
+
+.store-search button {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transform: translateY(-50%);
+    background: transparent;
+    border: 0;
+    color: var(--color-primary);
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   AÇÕES DO HEADER
+   ========================================================= */
+
+.store-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 25px;
+}
+
+.store-action {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.store-action:hover {
+    color: var(--color-primary);
+}
+
+.store-action svg {
+    stroke: currentColor;
+}
+
+.store-cart-count {
+    position: absolute;
+    top: -11px;
+    left: 14px;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 5px;
+    background: var(--color-primary);
+    color: white;
+    border: 2px solid white;
+    border-radius: var(--radius-pill);
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   NAVEGAÇÃO
+   ========================================================= */
+
+.store-navigation {
+    background: var(--color-surface);
+    border-top: 1px solid #f0e9e7;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.store-nav-links {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+}
+
+.store-nav-links a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 48px;
+    color: #554b4e;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.store-nav-links a::after {
+    position: absolute;
+    right: 50%;
+    bottom: 0;
+    left: 50%;
+    height: 2px;
+    background: var(--color-primary);
+    content: "";
+    transition:
+        left 0.2s ease,
+        right 0.2s ease;
+}
+
+.store-nav-links a:hover,
+.store-nav-links a.active {
+    color: var(--color-primary);
+}
+
+.store-nav-links a:hover::after,
+.store-nav-links a.active::after {
+    right: 0;
+    left: 0;
+}
+
+
+/* =========================================================
+   CARD GLOBAL DE PRODUTO
+   ========================================================= */
+
+.store-product-card {
+    overflow: hidden;
+    background: var(--color-surface);
+    border: 1px solid #eee5e2;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.store-product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.store-product-image {
+    aspect-ratio: 4/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background:
+        linear-gradient(135deg,
+            #f1ecea,
+            #e7dedb);
+    color: #a48d94;
+    font-size: 13px;
+}
+
+.store-product-category {
+    color: var(--color-primary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.store-product-button {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 16px;
+    background: transparent;
+    border: 1px solid var(--color-primary-light);
+    border-radius: var(--radius-pill);
+    color: var(--color-primary);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.store-product-button:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.store-view-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-primary);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.store-footer {
+    margin-top: 30px;
+    background: #3f2830;
+    color: #e8dfe2;
+}
+
+.store-footer-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.store-footer .store-logo-symbol {
+    background: #f2e5e8;
+    color: var(--color-primary-dark);
+}
+
+.store-footer .store-logo-text strong {
+    color: white;
+}
+
+.store-footer .store-logo-text span {
+    color: #cdbbc1;
+}
+
+.store-footer p,
+.store-footer span {
+    color: #cdbfc3;
+}
+
+.store-footer-title {
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+}
+
+.store-footer a {
+    width: fit-content;
+    color: #d5c6cb;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.store-footer a:hover {
+    color: white;
+}
+
+.store-footer-bottom {
+    margin-top: 45px;
+    padding-top: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 12px;
+}
+
+.store-footer-bottom p {
+    margin: 0;
+    color: #ad9da2;
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE GLOBAL
+   ========================================================= */
+
+@media (max-width: 1000px) {
+    .store-main-header-content {
+        grid-template-columns: 1fr auto;
+        padding-block: 14px;
+    }
+
+    .store-search {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    .store-topbar-content span:first-child {
+        display: none;
+    }
+
+    .store-topbar-content {
+        justify-content: center;
+    }
+}
+
+
+@media (max-width: 700px) {
+    .store-container {
+        width: calc(100% - 24px);
+    }
+
+    .store-logo-text strong {
+        font-size: 18px;
+    }
+
+    .store-logo-text span {
+        display: none;
+    }
+
+    .store-logo-symbol {
+        width: 40px;
+        height: 40px;
+        font-size: 22px;
+    }
+
+    .store-action>span:not(.store-cart-count) {
+        display: none;
+    }
+
+    .store-actions {
+        gap: 18px;
+    }
+
+    .store-nav-links {
+        justify-content: flex-start;
+        gap: 28px;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .store-nav-links::-webkit-scrollbar {
+        display: none;
+    }
+
+    .store-nav-links a {
+        flex-shrink: 0;
+    }
+
+    .store-footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
