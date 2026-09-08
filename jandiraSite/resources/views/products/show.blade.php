@@ -7,7 +7,7 @@
 @endpush
 
 @push('scripts')
-    @vite('resources/js/pages/product-show.js')
+    @vite('resources/js/store/product-show.js')
 @endpush
 
 @section('content')

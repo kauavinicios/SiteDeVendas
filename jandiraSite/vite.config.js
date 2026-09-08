@@ -10,7 +10,7 @@ export default defineConfig({
         laravel({
             input: [
                 // React / Inertia
-                'resources/css/app.css',
+                'resources/css/admin/app.css',
                 'resources/js/app.tsx',
 
                 // Loja - global
@@ -25,13 +25,12 @@ export default defineConfig({
 
                 // Produto
                 'resources/css/pages/product-show.css',
-                'resources/js/pages/product-show.js',
+                'resources/js/store/product-show.js',
 
                 // Carrinho
                 'resources/css/pages/cart.css',
-                'resources/js/pages/cart.js',
+                'resources/js/store/cart.js',
             ],
-            ssr: 'resources/js/ssr.jsx',
             refresh: true,
         }),
         react(),

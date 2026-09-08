@@ -1,0 +1,43 @@
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@import './auth.css';
+
+
+/* =========================================================
+   IDENTIDADE VISUAL DO ADMIN
+   ========================================================= */
+
+:root {
+    /* Cores principais */
+    --admin-primary: #8b3f59;
+    --admin-primary-dark: #6e2f45;
+    --admin-primary-light: #c98ca0;
+
+    /* Fundos */
+    --admin-background: #fffdfb;
+    --admin-background-soft: #faf7f5;
+    --admin-surface: #ffffff;
+
+    /* Textos */
+    --admin-text: #322b2d;
+    --admin-text-soft: #443a3d;
+    --admin-text-muted: #74686c;
+
+    /* Bordas */
+    --admin-border: #eadeda;
+    --admin-border-hover: #cdb9b4;
+
+    /* Estados */
+    --admin-success: #4f7a59;
+    --admin-success-background: #f2f8f3;
+    --admin-success-border: #cfe0d2;
+
+    --admin-danger: #a34c4c;
+
+    /* Sombras */
+    --admin-shadow-sm: 0 4px 14px rgba(139, 63, 89, 0.16);
+    --admin-shadow-md: 0 10px 30px rgba(66, 44, 51, 0.08);
+    --admin-shadow-lg: 0 18px 45px rgba(66, 44, 51, 0.09);
+}

@@ -1,12 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
+
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ProductVariantController as AdminProductVariantController;
+use App\Http\Controllers\Admin\DashboardController;
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/', [HomeController::class, 'index'])
+    ->name('home');
 
 Route::get('/produtos', [ProductController::class, 'index'])
     ->name('products.index');
@@ -26,11 +30,51 @@ Route::patch('/carrinho/{variant}', [CartController::class, 'update'])
 Route::delete('/carrinho/{variant}', [CartController::class, 'destroy'])
     ->name('cart.destroy');
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
-});
+Route::delete('/carrinho', [CartController::class, 'clear'])
+    ->name('cart.clear');
+
+
+/*
+|--------------------------------------------------------------------------
+| Administração
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')
+    ->get('/admin/dashboard', [DashboardController::class, 'index'])
+    ->name('dashboard');
+
+
+Route::middleware('auth')
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        Route::get('/produtos', [AdminProductController::class, 'index'])
+            ->name('products.index');
+
+        Route::get('/produtos/create', [AdminProductController::class, 'create'])
+            ->name('products.create');
+
+        Route::post('/produtos', [AdminProductController::class, 'store'])
+            ->name('products.store');
+
+        Route::get('/produtos/{product}/edit', [AdminProductController::class, 'edit'])
+            ->name('products.edit');
+
+        Route::put('/produtos/{product}', [AdminProductController::class, 'update'])
+            ->name('products.update');
+
+        Route::post('/produtos/{product}/variacoes', [AdminProductVariantController::class, 'store']) 
+            ->name('product-variants.store');
+            
+        Route::put('/produtos/{product}/variacoes/{variant}', [AdminProductVariantController::class, 'update'])
+            ->name('product-variants.update');
+
+        Route::delete('/produtos/{product}/variacoes/{variant}', [AdminProductVariantController::class, 'destroy'])
+            ->name('product-variants.destroy');
+    });
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

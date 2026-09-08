@@ -1,21 +1,65 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
+} from '@/components/ui/avatar';
+
 import { useInitials } from '@/hooks/use-initials';
 import { type User } from '@/types';
 
-export function UserInfo({ user, showEmail = false }: { user: User; showEmail?: boolean }) {
+export function UserInfo({
+    user,
+    showEmail = false,
+}: {
+    user: User;
+    showEmail?: boolean;
+}) {
     const getInitials = useInitials();
 
     return (
         <>
             <Avatar className="h-8 w-8 overflow-hidden rounded-full">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                <AvatarImage
+                    src={user.avatar}
+                    alt={user.name}
+                />
+
+                <AvatarFallback
+                    className="
+                        rounded-full
+                        bg-[var(--admin-primary)]
+                        text-xs
+                        font-semibold
+                        text-white
+                    "
+                >
                     {getInitials(user.name)}
                 </AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                {showEmail && <span className="text-muted-foreground truncate text-xs">{user.email}</span>}
+
+            <div className="grid min-w-0 flex-1 text-left text-sm leading-tight">
+                <span
+                    className="
+                        truncate
+                        font-medium
+                        text-[var(--admin-text)]
+                    "
+                >
+                    {user.name}
+                </span>
+
+                {showEmail && (
+                    <span
+                        className="
+                            mt-0.5
+                            truncate
+                            text-xs
+                            text-[var(--admin-text-muted)]
+                        "
+                    >
+                        {user.email}
+                    </span>
+                )}
             </div>
         </>
     );

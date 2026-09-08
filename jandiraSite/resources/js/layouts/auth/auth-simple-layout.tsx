@@ -8,27 +8,59 @@ interface AuthLayoutProps {
     description?: string;
 }
 
-export default function AuthSimpleLayout({ children, title, description }: AuthLayoutProps) {
+export default function AuthSimpleLayout({
+    children,
+    title,
+    description,
+}: AuthLayoutProps) {
     return (
-        <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-            <div className="w-full max-w-sm">
-                <div className="flex flex-col gap-8">
-                    <div className="flex flex-col items-center gap-4">
-                        <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">
-                            <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
-                                <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
-                            </div>
-                            <span className="sr-only">{title}</span>
-                        </Link>
-
-                        <div className="space-y-2 text-center">
-                            <h1 className="text-xl font-medium">{title}</h1>
-                            <p className="text-muted-foreground text-center text-sm">{description}</p>
-                        </div>
+        <main className="auth-page flex min-h-screen items-center justify-center px-4 py-10">
+            <section className="w-full max-w-md">
+                <Link
+                    href={route('home')}
+                    className="auth-brand mx-auto mb-6 flex w-fit items-center gap-3"
+                    aria-label="Voltar para a loja"
+                >
+                    <div className="auth-brand-icon flex h-11 w-11 items-center justify-center rounded-xl">
+                        <AppLogoIcon />
                     </div>
-                    {children}
+
+                    <div className="auth-brand-text flex flex-col leading-tight">
+                        <strong className="text-base font-semibold">
+                            Butique da Jandira
+                        </strong>
+
+                        <span className="mt-1 text-xs">
+                            Administração
+                        </span>
+                    </div>
+                </Link>
+
+                <div className="auth-card rounded-2xl p-6 md:p-8">
+                    <header className="mb-7 text-center">
+                        <h1 className="text-2xl font-semibold leading-tight text-[var(--admin-text)]">
+                            {title}
+                        </h1>
+
+                        {description && (
+                            <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-[var(--admin-text-muted)]">
+                                {description}
+                            </p>
+                        )}
+                    </header>
+
+                    <div className="w-full">
+                        {children}
+                    </div>
                 </div>
-            </div>
-        </div>
+
+                <Link
+                    href={route('home')}
+                    className="auth-link mx-auto mt-5 block w-fit text-sm"
+                >
+                    ← Voltar para a loja
+                </Link>
+            </section>
+        </main>
     );
 }

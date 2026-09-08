@@ -1,6 +1,5 @@
-// Components
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, MailCheck } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 import TextLink from '@/components/text-link';
@@ -17,23 +16,68 @@ export default function VerifyEmail({ status }: { status?: string }) {
     };
 
     return (
-        <AuthLayout title="Verify email" description="Please verify your email address by clicking on the link we just emailed to you.">
-            <Head title="Email verification" />
+        <AuthLayout
+            title="Verifique seu e-mail"
+            description="Enviamos um link de verificação para o seu e-mail. Clique nele para confirmar sua conta."
+        >
+            <Head title="Verificação de e-mail" />
+
+            <div className="mb-6 flex justify-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--admin-background-soft)] text-[var(--admin-primary)]">
+                    <MailCheck
+                        className="h-7 w-7"
+                        aria-hidden="true"
+                    />
+                </div>
+            </div>
 
             {status === 'verification-link-sent' && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    A new verification link has been sent to the email address you provided during registration.
+                <div className="auth-status mb-5 rounded-xl px-4 py-3 text-center text-sm">
+                    Um novo link de verificação foi enviado para o seu e-mail.
                 </div>
             )}
 
-            <form onSubmit={submit} className="space-y-6 text-center">
-                <Button disabled={processing} variant="secondary">
-                    {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                    Resend verification email
+            <form
+                onSubmit={submit}
+                className="flex flex-col gap-4"
+            >
+                <Button
+                    type="submit"
+                    disabled={processing}
+                    className="
+                        auth-primary-button
+                        h-11
+                        w-full
+                        rounded-xl
+                        font-semibold
+                        text-white
+                        disabled:cursor-not-allowed
+                        disabled:opacity-60
+                    "
+                >
+                    {processing && (
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                    )}
+
+                    {processing
+                        ? 'Enviando...'
+                        : 'Reenviar e-mail de verificação'}
                 </Button>
 
-                <TextLink href={route('logout')} method="post" className="mx-auto block text-sm">
-                    Log out
+                <TextLink
+                    href={route('logout')}
+                    method="post"
+                    className="
+                        mx-auto
+                        block
+                        text-sm
+                        text-[var(--admin-text-muted)]
+                        no-underline
+                        hover:text-[var(--admin-primary)]
+                        hover:underline
+                    "
+                >
+                    Sair da conta
                 </TextLink>
             </form>
         </AuthLayout>

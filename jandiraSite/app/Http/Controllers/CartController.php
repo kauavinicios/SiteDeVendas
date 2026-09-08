@@ -217,4 +217,13 @@ class CartController extends Controller
             ],
         ]);
     }
+
+    public function clear()
+    {
+        session()->forget('cart');
+
+        return response()->json([
+            'success' => true,
+        ]);
+    }
 }

@@ -7,7 +7,7 @@
 @endpush
 
 @push('scripts')
-    @vite('resources/js/pages/cart.js')
+    @vite('resources/js/store/cart.js')
 @endpush
 
 @section('content')
@@ -29,28 +29,28 @@
             </div>
 
 
-            {{-- Mensagens --}}
-            @if (session('success'))
+            {{-- Mensagens do carrinho --}}
+            @php
+                $cartMessage = session('success') ?? session('error');
+                $cartMessageType = session('error') ? 'error' : 'success';
+            @endphp
 
-                <div class="mb-6 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">
-                    {{ session('success') }}
-                </div>
-
-            @endif
-
-
-            @if (session('error'))
-
-                <div class="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                    {{ session('error') }}
-                </div>
-
-            @endif
-
+            <div
+                class="mb-6 rounded-xl border p-4 text-sm
+                    {{ $cartMessage ? '' : 'hidden' }}
+                    {{ $cartMessageType === 'success'
+                        ? 'border-green-200 bg-green-50 text-green-700'
+                        : 'border-red-200 bg-red-50 text-red-700'
+                    }}"
+                data-cart-message
+                data-message-type="{{ $cartMessageType }}"
+            >
+                {{ $cartMessage }}
+            </div>
 
             @if (!empty($cart))
 
-                <div class="grid gap-8 lg:grid-cols-[1fr_340px]">
+                <div class="grid gap-8 lg:grid-cols-[1fr_340px]" data-cart-content>
 
                     {{-- Produtos --}}
                     <div class="flex flex-col gap-4">
@@ -61,6 +61,9 @@
                                 class="store-cart-item"
                                 data-cart-item
                                 data-variant-id="{{ $item['variant_id'] }}"
+                                data-product-name="{{ $item['product_name'] }}"
+                                data-variant-name="{{ $item['variant_name'] }}"
+                                data-unit-price="{{ $item['price'] }}"
                                 data-update-url="{{ route('cart.update', $item['variant_id']) }}"
                                 data-delete-url="{{ route('cart.destroy', $item['variant_id']) }}"
                             >
@@ -197,47 +200,35 @@
                         </div>
 
 
-                        <button
-                            type="button"
-                            class="store-button-primary mt-6 w-full"
-                        >
+                        <button type="button" class="store-button-primary mt-6 w-full" data-whatsapp-number="{{ config('services.whatsapp.number') }}" data-clear-url="{{ route('cart.clear') }}" data-cart-checkout>
                             Finalizar pedido
                         </button>
 
-
-                        <a
-                            href="{{ route('products.index') }}"
-                            class="store-cart-continue"
-                        >
+                        <a href="{{ route('products.index') }}" class="store-cart-continue">
                             Continuar comprando
                         </a>
 
                     </aside>
 
                 </div>
-
-            @else
-
-                <div class="store-cart-empty">
-
-                    <h2 class="text-xl font-semibold">
-                        Seu carrinho está vazio
-                    </h2>
-
-                    <p class="mt-2 text-gray-500">
-                        Explore nossos produtos e escolha o que mais gostar.
-                    </p>
-
-                    <a
-                        href="{{ route('products.index') }}"
-                        class="store-button-primary mt-6"
-                    >
-                        Ver produtos
-                    </a>
-
-                </div>
-
             @endif
+
+           <div class="store-cart-empty {{ !empty($cart) ? 'hidden' : '' }}" data-cart-empty>
+                <h2 class="text-xl font-semibold">
+                    Seu carrinho está vazio
+                </h2>
+
+                <p class="mt-2 text-gray-500">
+                    Explore nossos produtos e escolha o que mais gostar.
+                </p>
+
+                <a
+                    href="{{ route('products.index') }}"
+                    class="store-button-primary mt-6"
+                >
+                    Ver produtos
+                </a>
+            </div>
 
         </div>
 

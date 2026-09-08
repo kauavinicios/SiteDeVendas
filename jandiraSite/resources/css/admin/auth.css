@@ -1,0 +1,144 @@
+/* =========================================================
+   AUTENTICAÇÃO
+   ========================================================= */
+
+.auth-page {
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at top left,
+            rgba(139, 63, 89, 0.10),
+            transparent 35%
+        ),
+        linear-gradient(
+            180deg,
+            var(--admin-background) 0%,
+            var(--admin-background-soft) 100%
+        );
+
+    color: var(--admin-text);
+}
+
+
+/* Marca
+--------------------------------------------------------- */
+
+.auth-brand {
+    color: var(--admin-text);
+    text-decoration: none;
+}
+
+.auth-brand-icon {
+    background: var(--admin-primary);
+    color: var(--admin-surface);
+
+    box-shadow:
+        0 6px 18px rgba(139, 63, 89, 0.18);
+}
+
+.auth-brand-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+.auth-brand-text span {
+    color: var(--admin-text-muted);
+}
+
+
+/* Card
+--------------------------------------------------------- */
+
+.auth-card {
+    border: 1px solid var(--admin-border);
+
+    background: rgba(255, 255, 255, 0.96);
+
+    box-shadow: var(--admin-shadow-lg);
+
+    backdrop-filter: blur(8px);
+}
+
+
+/* Inputs
+--------------------------------------------------------- */
+
+.auth-page input {
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.auth-page input:hover {
+    border-color: var(--admin-border-hover);
+}
+
+.auth-page input:focus {
+    border-color: var(--admin-primary);
+}
+
+
+/* Links
+--------------------------------------------------------- */
+
+.auth-link {
+    color: var(--admin-primary);
+    text-decoration: none;
+
+    transition: color 0.2s ease;
+}
+
+.auth-link:hover {
+    color: var(--admin-primary-dark);
+}
+
+
+/* Botão principal
+--------------------------------------------------------- */
+
+.auth-primary-button {
+    background: var(--admin-primary);
+
+    box-shadow: var(--admin-shadow-sm);
+
+    transition:
+        background-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.15s ease;
+}
+
+.auth-primary-button:hover:not(:disabled) {
+    background: var(--admin-primary-dark);
+
+    box-shadow:
+        0 8px 20px rgba(139, 63, 89, 0.22);
+}
+
+.auth-primary-button:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+
+/* Mensagens
+--------------------------------------------------------- */
+
+.auth-status {
+    border: 1px solid var(--admin-success-border);
+
+    background: var(--admin-success-background);
+
+    color: var(--admin-success);
+}
+
+
+/* Responsividade
+--------------------------------------------------------- */
+
+@media (max-width: 480px) {
+    .auth-card {
+        box-shadow: var(--admin-shadow-md);
+    }
+}
