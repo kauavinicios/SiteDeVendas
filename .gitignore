@@ -1,14 +1,14 @@
 # Laravel & PHP
-/vendor/
-/.env
-/.env.*
-/storage/*.log
-/storage/framework/cache/data/
-/storage/framework/sessions/
-/storage/framework/views/
-/public/hot
-/public/build
-/public/mix-manifest.json
+/jandiraSite/vendor/
+/jandiraSite/.env
+/jandiraSite/.env.*
+/jandiraSite/storage/*.log
+/jandiraSite/storage/framework/cache/data/
+/jandiraSite/storage/framework/sessions/
+/jandiraSite/storage/framework/views/
+/jandiraSite/public/hot
+/jandiraSite/public/build
+/jandiraSite/public/mix-manifest.json
 
 # Node / NPM
 /jandiraSite/node_modules/
