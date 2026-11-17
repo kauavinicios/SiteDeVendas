@@ -1,32 +1,66 @@
-# Laravel & PHP
+
+# ==========================================
+# Laravel / PHP
+# ==========================================
+
 /jandiraSite/vendor/
 /jandiraSite/.env
 /jandiraSite/.env.*
+!/jandiraSite/.env.example
+
 /jandiraSite/storage/*.log
-/jandiraSite/storage/framework/cache/data/
-/jandiraSite/storage/framework/sessions/
-/jandiraSite/storage/framework/views/
+/jandiraSite/storage/logs/*
+!/jandiraSite/storage/logs/.gitignore
+
+/jandiraSite/storage/framework/cache/data/*
+!/jandiraSite/storage/framework/cache/data/.gitignore
+
+/jandiraSite/storage/framework/sessions/*
+!/jandiraSite/storage/framework/sessions/.gitignore
+
+/jandiraSite/storage/framework/views/*
+!/jandiraSite/storage/framework/views/.gitignore
+
+/jandiraSite/bootstrap/cache/*
+!/jandiraSite/bootstrap/cache/.gitignore
+
+# Arquivos compilados
 /jandiraSite/public/hot
-/jandiraSite/public/build
+/jandiraSite/public/build/
 /jandiraSite/public/mix-manifest.json
 
-# Node / NPM
+# ==========================================
+# Node / NPM / Vite
+# ==========================================
+
 /jandiraSite/node_modules/
+/jandiraSite/.vite/
 
-# Composer vendor already covered
-/jandiraSite/vendor/
+# ==========================================
+# Docker
+# ==========================================
 
-# Docker volume – PostgreSQL persistence
 /jandiraSite/docker/postgresql/data/
+/jandiraSite/docker/logs/
 
-# IDE / editor files
+# ==========================================
+# IDE / Editor
+# ==========================================
+
 /.idea/
 /.vscode/
 
-# OS generated files
+# ==========================================
+# Sistema operacional
+# ==========================================
+
 .DS_Store
 Thumbs.db
+Desktop.ini
 
-# Misc
-npm-debug.log
-yarn-error.log
+# ==========================================
+# Logs e arquivos temporários
+# ==========================================
+
+npm-debug.log*
+yarn-error.log*
