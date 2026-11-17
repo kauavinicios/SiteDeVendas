@@ -17,7 +17,7 @@ return new class extends Migration
                 ->constrained('products')
                 ->cascadeOnDelete();
             $table->string('name');
-            $table->string('sku')->unique();
+            $table->string('sku')->nullable()->unique();
             $table->decimal('price', 10, 2);
             $table->unsignedInteger('stock')->default(0);
             $table->boolean('active')->default(true);

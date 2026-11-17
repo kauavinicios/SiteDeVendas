@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ProductVariantController as AdminProductVariantController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 
 Route::get('/', [HomeController::class, 'index'])
@@ -73,6 +74,18 @@ Route::middleware('auth')
 
         Route::delete('/produtos/{product}/variacoes/{variant}', [AdminProductVariantController::class, 'destroy'])
             ->name('product-variants.destroy');
+
+        Route::get('/categorias', [AdminCategoryController::class, 'index'])
+            ->name('categories.index');
+
+        Route::post('/categorias', [AdminCategoryController::class, 'store'])
+            ->name('categories.store');
+
+        Route::put('/categorias/{category}', [AdminCategoryController::class, 'update'])
+            ->name('categories.update');
+
+        Route::delete('/categorias/{category}', [AdminCategoryController::class, 'destroy'])
+            ->name('categories.destroy');
     });
 
 

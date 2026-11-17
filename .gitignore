@@ -1,0 +1,32 @@
+# Laravel & PHP
+/vendor/
+/.env
+/.env.*
+/storage/*.log
+/storage/framework/cache/data/
+/storage/framework/sessions/
+/storage/framework/views/
+/public/hot
+/public/build
+/public/mix-manifest.json
+
+# Node / NPM
+/jandiraSite/node_modules/
+
+# Composer vendor already covered
+/jandiraSite/vendor/
+
+# Docker volume – PostgreSQL persistence
+/jandiraSite/docker/postgresql/data/
+
+# IDE / editor files
+/.idea/
+/.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Misc
+npm-debug.log
+yarn-error.log
