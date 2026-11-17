@@ -1,25 +1,32 @@
-.DS_Store
-.env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/bootstrap/ssr
-/node_modules
-/public/build
+# Laravel & PHP
+/vendor/
+/.env
+/.env.*
+/storage/*.log
+/storage/framework/cache/data/
+/storage/framework/sessions/
+/storage/framework/views/
 /public/hot
-/public/storage
-/storage/*.key
-/storage/pail
-/vendor
-auth.json
-Homestead.json
-Homestead.yaml
+/public/build
+/public/mix-manifest.json
+
+# Node / NPM
+/jandiraSite/node_modules/
+
+# Composer vendor already covered
+/jandiraSite/vendor/
+
+# Docker volume – PostgreSQL persistence
+/jandiraSite/docker/postgresql/data/
+
+# IDE / editor files
+/.idea/
+/.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Misc
 npm-debug.log
 yarn-error.log
