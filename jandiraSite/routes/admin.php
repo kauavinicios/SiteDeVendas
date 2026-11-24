@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductImageController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\StockController;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,17 @@ Route::middleware('auth')
                 ->parameters(['produtos' => 'product', 'variacoes' => 'variant'])
                 ->names('product-variants')
                 ->scoped();
+
+            // /admin/produtos/{product}/imagens — upload, reordenação e exclusão
+            Route::post('/produtos/{product}/imagens', [ProductImageController::class, 'store'])
+                ->name('product-images.store');
+
+            Route::patch('/produtos/{product}/imagens/reordenar', [ProductImageController::class, 'reorder'])
+                ->name('product-images.reorder');
+
+            Route::delete('/produtos/{product}/imagens/{image}', [ProductImageController::class, 'destroy'])
+                ->name('product-images.destroy')
+                ->scopeBindings();
 
             // /admin/categorias — index, store, update, destroy
             Route::resource('categorias', CategoryController::class)

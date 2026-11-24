@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\ProductRequest;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -65,6 +66,7 @@ class ProductController extends Controller
             'variants' => function ($query) {
                 $query->orderBy('id');
             },
+            'images',
         ]);
 
         return Inertia::render('admin/products/edit', [
@@ -75,6 +77,15 @@ class ProductController extends Controller
                 'description' => $product->description,
                 'active' => $product->active,
                 'featured' => $product->featured,
+
+                'images' => $product->images->map(function ($image) {
+                    return [
+                        'id' => $image->id,
+                        'path' => $image->path,
+                        'url' => Storage::disk('public')->url($image->path),
+                        'position' => $image->position,
+                    ];
+                })->values(),
 
                 'variants' => $product->variants->map(function ($variant) {
                     return [

@@ -9,6 +9,9 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
+import ProductImages, {
+    type ProductImageItem,
+} from '@/components/product-images';
 import ProductVariants, {
     type ProductVariant,
 } from '@/components/product-variants';
@@ -20,6 +23,7 @@ type Product = {
     description: string | null;
     active: boolean;
     featured: boolean;
+    images: ProductImageItem[];
     variants: ProductVariant[];
 };
 
@@ -112,6 +116,10 @@ export default function ProductsEdit({
                     submitLabel="Salvar alterações"
                     onChange={setData}
                     onSubmit={submit}
+                />
+                <ProductImages
+                    productId={product.id}
+                    images={product.images}
                 />
                 <ProductVariants
                     productId={product.id}
