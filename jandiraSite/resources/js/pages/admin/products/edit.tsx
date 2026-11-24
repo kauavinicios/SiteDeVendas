@@ -5,7 +5,7 @@ import ProductForm, {
 } from '@/components/product-form';
 
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
@@ -32,10 +32,18 @@ type Props = {
     categories: Category[];
 };
 
+type PageProps = {
+    flash?: {
+        success?: string;
+        error?: string;
+    };
+};
+
 export default function ProductsEdit({
     product,
     categories,
 }: Props) {
+    const { flash } = usePage<PageProps>().props;
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Produtos',
@@ -107,6 +115,18 @@ export default function ProductsEdit({
                         .
                     </p>
                 </section>
+
+                {flash?.success && (
+                    <div className="rounded-xl border border-[var(--admin-success-border)] bg-[var(--admin-success-background)] px-4 py-3 text-sm font-medium text-[var(--admin-success)]">
+                        {flash.success}
+                    </div>
+                )}
+
+                {flash?.error && (
+                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                        {flash.error}
+                    </div>
+                )}
 
                 <ProductForm
                     data={data}

@@ -11,14 +11,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import { useForm } from '@inertiajs/react';
-import { Boxes, Pencil, Plus } from 'lucide-react';
+import { router, useForm } from '@inertiajs/react';
+import { Boxes, Pencil, Plus, Trash2 } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 export type ProductVariant = {
     id: number;
     name: string;
-    sku: string;
+    sku: string | null;
     price: string;
     stock: number;
     active: boolean;
@@ -44,6 +44,7 @@ export default function ProductVariants({
     const [open, setOpen] = useState(false);
 
     const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const {
         data,
@@ -147,6 +148,32 @@ export default function ProductVariants({
         setOpen(true);
     };
 
+    const handleDelete = (variant: ProductVariant) => {
+        if (deletingId === variant.id) {
+            return;
+        }
+
+        if (
+            !confirm(
+                `Deseja realmente excluir a variação "${variant.name}"? Esta ação não pode ser desfeita.`,
+            )
+        ) {
+            return;
+        }
+
+        router.delete(
+            route('admin.product-variants.destroy', {
+                product: productId,
+                variant: variant.id,
+            }),
+            {
+                preserveScroll: true,
+                onStart: () => setDeletingId(variant.id),
+                onFinish: () => setDeletingId(null),
+            },
+        );
+    };
+
     return (
         <>
             <section
@@ -171,7 +198,9 @@ export default function ProductVariants({
                         </p>
                     </div>
 
-                    <button type="button" onClick={openCreateModal}
+                    <button
+                        type="button"
+                        onClick={openCreateModal}
                         className="
                             auth-primary-button
                             inline-flex
@@ -193,8 +222,9 @@ export default function ProductVariants({
 
                         Adicionar variação
                     </button>
+                </div>
 
-                    {variants.length > 0 ? (
+                {variants.length > 0 ? (
                         <div className="overflow-x-auto">
                             <table className="w-full min-w-[680px]">
                                 <thead>
@@ -274,26 +304,55 @@ export default function ProductVariants({
                                             </TableCell>
 
                                             <TableCell className="text-right">
-                                                <button type="button" onClick={() => openEditModal(variant)}
-                                                    className="
-                                                        inline-flex
-                                                        size-9
-                                                        items-center
-                                                        justify-center
-                                                        rounded-lg
-                                                        text-[var(--admin-text-muted)]
-                                                        transition-colors
-                                                        hover:bg-[var(--admin-background-soft)]
-                                                        hover:text-[var(--admin-primary)]
-                                                    "
-                                                    aria-label={`Editar ${variant.name}`}
-                                                    title="Editar variação"
-                                                >
-                                                    <Pencil
-                                                        className="size-4"
-                                                        aria-hidden="true"
-                                                    />
-                                                </button>
+                                                <div className="inline-flex items-center gap-1">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openEditModal(variant)}
+                                                        className="
+                                                            inline-flex
+                                                            size-9
+                                                            items-center
+                                                            justify-center
+                                                            rounded-lg
+                                                            text-[var(--admin-text-muted)]
+                                                            transition-colors
+                                                            hover:bg-[var(--admin-background-soft)]
+                                                            hover:text-[var(--admin-primary)]
+                                                        "
+                                                        aria-label={`Editar ${variant.name}`}
+                                                        title="Editar variação"
+                                                    >
+                                                        <Pencil
+                                                            className="size-4"
+                                                            aria-hidden="true"
+                                                        />
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDelete(variant)}
+                                                        disabled={deletingId === variant.id}
+                                                        className="
+                                                            inline-flex
+                                                            size-9
+                                                            items-center
+                                                            justify-center
+                                                            rounded-lg
+                                                            text-[var(--admin-text-muted)]
+                                                            transition-colors
+                                                            hover:bg-red-50
+                                                            hover:text-red-600
+                                                            disabled:opacity-40
+                                                        "
+                                                        aria-label={`Excluir ${variant.name}`}
+                                                        title="Excluir variação"
+                                                    >
+                                                        <Trash2
+                                                            className="size-4"
+                                                            aria-hidden="true"
+                                                        />
+                                                    </button>
+                                                </div>
                                             </TableCell>
                                         </tr>
                                     ))}
@@ -332,7 +391,6 @@ export default function ProductVariants({
                             </p>
                         </div>
                     )}
-                </div>
             </section>
             <Dialog
                 open={open}
@@ -362,14 +420,20 @@ export default function ProductVariants({
                                 Nome da variação
                             </Label>
 
-                            <input id="variant-active" type="checkbox" checked={data.active}
+                            <Input
+                                id="variant-name"
+                                value={data.name}
                                 onChange={(e) =>
-                                    setData(
-                                        'active',
-                                        e.target.checked,
-                                    )
+                                    setData('name', e.target.value)
                                 }
-                                className="size-4 accent-[var(--admin-primary)]"
+                                placeholder="Ex.: Casal, Queen, 100 ml"
+                                required
+                                className="
+                                    h-11
+                                    rounded-xl
+                                    border-[var(--admin-border)]
+                                    bg-[var(--admin-background)]
+                                "
                             />
 
                             <p className="text-xs text-[var(--admin-text-muted)]">
@@ -493,7 +557,7 @@ export default function ProductVariants({
                                 type="checkbox"
                                 checked={data.active}
                                 onChange={(e) =>
-                                    setData('active', e.target.checked,)
+                                    setData('active', e.target.checked)
                                 }
                                 className="size-4 accent-[var(--admin-primary)]"
                             />
