@@ -9,27 +9,26 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
-                // React / Inertia
-                'resources/css/admin/app.css',
+                // Admin (React / Inertia) — o CSS é importado pelo próprio app.tsx
                 'resources/js/app.tsx',
 
                 // Loja - global
-                'resources/css/index.css',
-                'resources/js/index.js',
+                'resources/css/shop/index.css',
+                'resources/js/shop/index.js',
 
                 // Home
-                'resources/css/pages/home.css',
+                'resources/css/shop/pages/home.css',
 
                 // Catálogo
-                'resources/css/pages/products.css',
+                'resources/css/shop/pages/products.css',
 
                 // Produto
-                'resources/css/pages/product-show.css',
-                'resources/js/store/product-show.js',
+                'resources/css/shop/pages/product-show.css',
+                'resources/js/shop/product-show.js',
 
                 // Carrinho
-                'resources/css/pages/cart.css',
-                'resources/js/store/cart.js',
+                'resources/css/shop/pages/cart.css',
+                'resources/js/shop/cart.js',
             ],
             refresh: true,
         }),

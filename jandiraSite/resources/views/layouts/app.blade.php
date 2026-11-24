@@ -14,7 +14,7 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet">
 
         {{-- CSS global da loja --}}
-        @vite('resources/css/index.css')
+        @vite('resources/css/shop/index.css')
         {{-- CSS específico da página --}}
         @stack('styles')
 
@@ -31,7 +31,7 @@
         <x-partials.footer />
 
         {{-- JavaScript global --}}
-        @vite('resources/js/index.js')
+        @vite('resources/js/shop/index.js')
         {{-- JavaScript específico da página --}}
         @stack('scripts')
 

@@ -7,50 +7,40 @@ use Illuminate\Database\Seeder;
 
 class CategorySeeder extends Seeder
 {
+    /**
+     * Categorias raiz e suas subcategorias.
+     *
+     * Usa updateOrCreate (chave: slug) para que o seeder possa ser
+     * executado várias vezes sem duplicar registros.
+     */
     public function run(): void
     {
-        $casa = Category::create([
-            'name' => 'Casa',
-            'slug' => 'casa',
-        ]);
+        $tree = [
+            ['name' => 'Casa', 'slug' => 'casa', 'children' => [
+                ['name' => 'Lençóis', 'slug' => 'lencois'],
+                ['name' => 'Fronhas', 'slug' => 'fronhas'],
+                ['name' => 'Jogos de Cama', 'slug' => 'jogos-de-cama'],
+                ['name' => 'Cobre-leitos', 'slug' => 'cobre-leitos'],
+                ['name' => 'Cobertas', 'slug' => 'cobertas'],
+            ]],
+            ['name' => 'Perfumaria', 'slug' => 'perfumaria', 'children' => [
+                ['name' => 'O Boticário', 'slug' => 'o-boticario'],
+                ['name' => 'Perfumes Importados', 'slug' => 'perfumes-importados'],
+            ]],
+        ];
 
-        $casa->children()->createMany([
-            [
-                'name' => 'Lençóis',
-                'slug' => 'lencois',
-            ],
-            [
-                'name' => 'Fronhas',
-                'slug' => 'fronhas',
-            ],
-            [
-                'name' => 'Jogos de Cama',
-                'slug' => 'jogos-de-cama',
-            ],
-            [
-                'name' => 'Cobre-leitos',
-                'slug' => 'cobre-leitos',
-            ],
-            [
-                'name' => 'Cobertas',
-                'slug' => 'cobertas',
-            ],
-        ]);
+        foreach ($tree as $root) {
+            $parent = Category::updateOrCreate(
+                ['slug' => $root['slug']],
+                ['name' => $root['name'], 'parent_id' => null],
+            );
 
-        $perfumaria = Category::create([
-            'name' => 'Perfumaria',
-            'slug' => 'perfumaria',
-        ]);
-
-        $perfumaria->children()->createMany([
-            [
-                'name' => 'O Boticário',
-                'slug' => 'o-boticario',
-            ],
-            [
-                'name' => 'Perfumes Importados',
-                'slug' => 'perfumes-importados',
-            ],
-        ]);
+            foreach ($root['children'] as $child) {
+                Category::updateOrCreate(
+                    ['slug' => $child['slug']],
+                    ['name' => $child['name'], 'parent_id' => $parent->id],
+                );
+            }
+        }
     }
 }

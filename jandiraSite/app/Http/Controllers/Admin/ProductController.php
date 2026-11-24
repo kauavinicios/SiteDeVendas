@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ProductRequest;
+use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Models\Category;
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Str;
-
 
 class ProductController extends Controller
 {
@@ -26,7 +24,7 @@ class ProductController extends Controller
 
         return Inertia::render('admin/products/index', [
             'products' => $products,
-        ]);        
+        ]);
     }
 
     public function create(): Response
@@ -42,26 +40,11 @@ class ProductController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(ProductRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'category_id' => ['required', 'exists:categories,id'],
-            'description' => ['nullable', 'string'],
-            'active' => ['required', 'boolean'],
-            'featured' => ['required', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
-        $baseSlug = Str::slug($validated['name']);
-        $slug = $baseSlug;
-        $counter = 2;
-
-        while (Product::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $counter;
-            $counter++;
-        }
-
-        $validated['slug'] = $slug;
+        $validated['slug'] = Product::generateUniqueSlug($validated['name']);
 
         Product::create($validated);
 
@@ -110,31 +93,12 @@ class ProductController extends Controller
     }
 
     public function update(
-        Request $request,
+        ProductRequest $request,
         Product $product
     ): RedirectResponse {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'category_id' => ['required', 'exists:categories,id'],
-            'description' => ['nullable', 'string'],
-            'active' => ['required', 'boolean'],
-            'featured' => ['required', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
-        $baseSlug = Str::slug($validated['name']);
-        $slug = $baseSlug;
-        $counter = 2;
-
-        while (
-            Product::where('slug', $slug)
-                ->where('id', '!=', $product->id)
-                ->exists()
-        ) {
-            $slug = $baseSlug . '-' . $counter;
-            $counter++;
-        }
-
-        $validated['slug'] = $slug;
+        $validated['slug'] = Product::generateUniqueSlug($validated['name'], $product->id);
 
         $product->update($validated);
 

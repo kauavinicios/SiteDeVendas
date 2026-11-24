@@ -29,7 +29,7 @@ class CategoryController extends Controller
         $data = $request->validated();
 
         if (empty($data['slug'])) {
-            $data['slug'] = $this->generateUniqueSlug($data['name']);
+            $data['slug'] = Category::generateUniqueSlug($data['name']);
         } else {
             $data['slug'] = Str::slug($data['slug']);
         }
@@ -46,7 +46,7 @@ class CategoryController extends Controller
         $data = $request->validated();
 
         if (empty($data['slug'])) {
-            $data['slug'] = $this->generateUniqueSlug($data['name'], $category->id);
+            $data['slug'] = Category::generateUniqueSlug($data['name'], $category->id);
         } else {
             $data['slug'] = Str::slug($data['slug']);
         }
@@ -78,23 +78,4 @@ class CategoryController extends Controller
             ->route('admin.categories.index')
             ->with('success', 'Categoria excluída com sucesso.');
     }
-
-    private function generateUniqueSlug(string $name, ?int $ignoreId = null): string
-    {
-        $base = Str::slug($name);
-        $slug = $base;
-        $counter = 1;
-
-        while (
-            Category::where('slug', $slug)
-                ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
-                ->exists()
-        ) {
-            $slug = "{$base}-{$counter}";
-            $counter++;
-        }
-
-        return $slug;
-    }
 }
-

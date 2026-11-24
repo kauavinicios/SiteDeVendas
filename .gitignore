@@ -28,6 +28,11 @@
 /jandiraSite/public/hot
 /jandiraSite/public/build/
 /jandiraSite/public/mix-manifest.json
+/jandiraSite/public/storage
+
+# PHPUnit
+/jandiraSite/.phpunit.cache/
+/jandiraSite/.phpunit.result.cache
 
 # ==========================================
 # Node / NPM / Vite

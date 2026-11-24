@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Shop;
 
+use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
-
-
 
 class ProductController extends Controller
 {
@@ -25,10 +24,10 @@ class ProductController extends Controller
 
                 $query->where(function ($query) use ($busca) {
                     $query
-                        ->where('name', 'ilike', '%' . $busca . '%')
-                        ->orWhere('description', 'ilike', '%' . $busca . '%')
+                        ->where('name', 'ilike', '%'.$busca.'%')
+                        ->orWhere('description', 'ilike', '%'.$busca.'%')
                         ->orWhereHas('category', function ($query) use ($busca) {
-                            $query->where('name', 'ilike', '%' . $busca . '%');
+                            $query->where('name', 'ilike', '%'.$busca.'%');
                         });
                 });
             })
@@ -70,7 +69,7 @@ class ProductController extends Controller
                         [
                             'variants as menor_preco' => function ($query) {
                                 $query->where('active', true);
-                            }
+                            },
                         ],
                         'price'
                     )
@@ -83,7 +82,7 @@ class ProductController extends Controller
                         [
                             'variants as maior_preco' => function ($query) {
                                 $query->where('active', true);
-                            }
+                            },
                         ],
                         'price'
                     )

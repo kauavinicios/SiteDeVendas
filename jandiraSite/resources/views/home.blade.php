@@ -3,7 +3,7 @@
 @section('title', 'Início - Butique da Jandira')
 
 @push('styles')
-    @vite('resources/css/pages/home.css')
+    @vite('resources/css/shop/pages/home.css')
 @endpush
 
 @section('content')

@@ -1,0 +1,54 @@
+name: linter
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+
+# Apenas leitura: o workflow só VERIFICA o estilo, não faz commits.
+# Para corrigir localmente: vendor/bin/pint && npm run format && npm run lint
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    # A aplicação Laravel fica na subpasta jandiraSite/
+    defaults:
+      run:
+        working-directory: jandiraSite
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: jandiraSite/package-lock.json
+
+      - name: Install Dependencies
+        run: |
+          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+          npm ci
+
+      - name: Check PHP code style (Pint)
+        run: vendor/bin/pint --test
+
+      - name: Check Frontend format (Prettier)
+        run: npm run format:check
+
+      - name: Lint Frontend (ESLint)
+        run: npx eslint .

@@ -323,26 +323,32 @@ class ProductSeeder extends Seeder
             ],
         ];
 
+        // updateOrCreate (chaves: slug do produto / sku da variação) permite
+        // executar o seeder várias vezes sem duplicar registros.
         foreach ($produtos as $index => $dados) {
 
-            $produto = Product::create([
-                'category_id' => $dados['category']->id,
-                'name' => $dados['name'],
-                'slug' => $dados['slug'],
-                'description' => $dados['description'],
-                'active' => true,
-                'featured' => $index < 8,
-            ]);
+            $produto = Product::updateOrCreate(
+                ['slug' => $dados['slug']],
+                [
+                    'category_id' => $dados['category']->id,
+                    'name' => $dados['name'],
+                    'description' => $dados['description'],
+                    'active' => true,
+                    'featured' => $index < 8,
+                ],
+            );
 
             foreach ($dados['variants'] as $variant) {
 
-                $produto->variants()->create([
-                    'name' => $variant['name'],
-                    'sku' => $variant['sku'],
-                    'price' => $variant['price'],
-                    'stock' => $variant['stock'],
-                    'active' => true,
-                ]);
+                $produto->variants()->updateOrCreate(
+                    ['sku' => $variant['sku']],
+                    [
+                        'name' => $variant['name'],
+                        'price' => $variant['price'],
+                        'stock' => $variant['stock'],
+                        'active' => true,
+                    ],
+                );
             }
         }
     }

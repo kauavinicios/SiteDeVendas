@@ -3,11 +3,11 @@
 @section('title', $product->name . ' - Butique da Jandira')
 
 @push('styles')
-    @vite('resources/css/pages/product-show.css')
+    @vite('resources/css/shop/pages/product-show.css')
 @endpush
 
 @push('scripts')
-    @vite('resources/js/store/product-show.js')
+    @vite('resources/js/shop/product-show.js')
 @endpush
 
 @section('content')

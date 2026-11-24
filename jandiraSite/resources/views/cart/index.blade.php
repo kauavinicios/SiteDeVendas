@@ -3,11 +3,11 @@
 @section('title', 'Carrinho - Butique da Jandira')
 
 @push('styles')
-    @vite('resources/css/pages/cart.css')
+    @vite('resources/css/shop/pages/cart.css')
 @endpush
 
 @push('scripts')
-    @vite('resources/js/store/cart.js')
+    @vite('resources/js/shop/cart.js')
 @endpush
 
 @section('content')
