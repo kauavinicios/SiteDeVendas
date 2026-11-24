@@ -37,20 +37,6 @@ class ProductVariantController extends Controller
         );
     }
 
-    public function destroy(
-        Product $product,
-        ProductVariant $variant
-    ): RedirectResponse {
-        $this->ensureVariantBelongsToProduct($product, $variant);
-
-        $variant->delete();
-
-        return back()->with(
-            'success',
-            'Variação excluída com sucesso.'
-        );
-    }
-
     /**
      * Defesa extra: a rota já usa scoped bindings (routes/admin.php).
      */

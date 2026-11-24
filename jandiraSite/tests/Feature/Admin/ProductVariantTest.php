@@ -83,24 +83,46 @@ class ProductVariantTest extends TestCase
         $this->assertSame(7, $variant->fresh()->stock);
     }
 
-    public function test_destroy_deletes_variant(): void
+    public function test_update_can_deactivate_and_reactivate_variant(): void
     {
-        $variant = ProductVariant::factory()->create();
+        $variant = ProductVariant::factory()->create(['active' => true]);
 
-        $this->delete(route('admin.product-variants.destroy', [$variant->product, $variant]))
-            ->assertSessionHas('success');
-
-        $this->assertModelMissing($variant);
-    }
-
-    public function test_variant_from_another_product_returns_404(): void
-    {
-        $variant = ProductVariant::factory()->create();
-        $otherProduct = Product::factory()->create();
-
-        $this->delete(route('admin.product-variants.destroy', [$otherProduct, $variant]))
-            ->assertNotFound();
+        $this->put(route('admin.product-variants.update', [$variant->product, $variant]), [
+            'name' => $variant->name,
+            'sku' => $variant->sku,
+            'price' => $variant->price,
+            'stock' => $variant->stock,
+            'active' => false,
+        ])->assertSessionHas('success');
 
         $this->assertModelExists($variant);
+        $this->assertFalse($variant->fresh()->active);
+
+        $this->put(route('admin.product-variants.update', [$variant->product, $variant]), [
+            'name' => $variant->name,
+            'sku' => $variant->sku,
+            'price' => $variant->price,
+            'stock' => $variant->stock,
+            'active' => true,
+        ])->assertSessionHas('success');
+
+        $this->assertTrue($variant->fresh()->active);
+    }
+
+    public function test_updating_variant_from_another_product_returns_404(): void
+    {
+        $variant = ProductVariant::factory()->create(['active' => true]);
+        $otherProduct = Product::factory()->create();
+
+        $this->put(route('admin.product-variants.update', [$otherProduct, $variant]), [
+            'name' => $variant->name,
+            'sku' => $variant->sku,
+            'price' => $variant->price,
+            'stock' => $variant->stock,
+            'active' => false,
+        ])->assertNotFound();
+
+        $this->assertModelExists($variant);
+        $this->assertTrue($variant->fresh()->active);
     }
 }

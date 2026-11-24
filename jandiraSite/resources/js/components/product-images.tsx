@@ -1,15 +1,7 @@
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { router } from '@inertiajs/react';
-import {
-    ArrowLeft,
-    ArrowRight,
-    ImagePlus,
-    Star,
-    Trash2,
-    Upload,
-    X,
-} from 'lucide-react';
+import { ArrowLeft, ArrowRight, ImagePlus, Star, Trash2, Upload, X } from 'lucide-react';
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 
 export type ProductImageItem = {
@@ -24,10 +16,7 @@ type ProductImagesProps = {
     images: ProductImageItem[];
 };
 
-export default function ProductImages({
-    productId,
-    images,
-}: ProductImagesProps) {
+export default function ProductImages({ productId, images }: ProductImagesProps) {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
@@ -93,16 +82,9 @@ export default function ProductImages({
                     setSelectedFiles([]);
                 },
                 onError: (errors) => {
-                    const firstError =
-                        errors.images ??
-                        Object.entries(errors).find(([key]) =>
-                            key.startsWith('images.'),
-                        )?.[1];
+                    const firstError = errors.images ?? Object.entries(errors).find(([key]) => key.startsWith('images.'))?.[1];
 
-                    setErrorMessage(
-                        firstError ??
-                            'Não foi possível enviar as imagens selecionadas.',
-                    );
+                    setErrorMessage(firstError ?? 'Não foi possível enviar as imagens selecionadas.');
                 },
             },
         );
@@ -124,9 +106,7 @@ export default function ProductImages({
                 },
                 onFinish: () => setMutating(false),
                 onError: () => {
-                    setErrorMessage(
-                        'Não foi possível atualizar a ordem das imagens.',
-                    );
+                    setErrorMessage('Não foi possível atualizar a ordem das imagens.');
                 },
             },
         );
@@ -186,14 +166,10 @@ export default function ProductImages({
         <section className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] p-5 shadow-sm md:p-6">
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 className="text-base font-semibold text-[var(--admin-text)]">
-                        Imagens do produto
-                    </h2>
+                    <h2 className="text-base font-semibold text-[var(--admin-text)]">Imagens do produto</h2>
 
                     <p className="mt-1 text-sm text-[var(--admin-text-muted)]">
-                        Envie até 10 imagens por vez (JPG, PNG ou WEBP, máximo
-                        de 5 MB cada). A primeira imagem será exibida como
-                        principal.
+                        Envie até 10 imagens por vez (JPG, PNG ou WEBP, máximo de 5 MB cada). A primeira imagem será exibida como principal.
                     </p>
                 </div>
 
@@ -211,20 +187,7 @@ export default function ProductImages({
                         type="button"
                         disabled={busy}
                         onClick={() => fileInputRef.current?.click()}
-                        className="
-                            auth-primary-button
-                            inline-flex
-                            h-10
-                            items-center
-                            justify-center
-                            gap-2
-                            rounded-xl
-                            px-4
-                            text-sm
-                            font-semibold
-                            text-white
-                            disabled:opacity-50
-                        "
+                        className="auth-primary-button inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white disabled:opacity-50"
                     >
                         <ImagePlus className="size-4" aria-hidden="true" />
                         Selecionar imagens
@@ -242,10 +205,7 @@ export default function ProductImages({
                 <div className="mb-6 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-background-soft)] p-4">
                     <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-sm font-medium text-[var(--admin-text)]">
-                            {previews.length}{' '}
-                            {previews.length === 1
-                                ? 'imagem selecionada para envio'
-                                : 'imagens selecionadas para envio'}
+                            {previews.length} {previews.length === 1 ? 'imagem selecionada para envio' : 'imagens selecionadas para envio'}
                         </p>
 
                         <div className="flex items-center gap-2">
@@ -278,11 +238,7 @@ export default function ProductImages({
                                 className="group relative overflow-hidden rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)]"
                             >
                                 <div className="aspect-square w-full overflow-hidden bg-[var(--admin-background)]">
-                                    <img
-                                        src={preview.url}
-                                        alt={preview.name}
-                                        className="size-full object-cover"
-                                    />
+                                    <img src={preview.url} alt={preview.name} className="size-full object-cover" />
                                 </div>
 
                                 <button
@@ -290,27 +246,12 @@ export default function ProductImages({
                                     disabled={busy}
                                     onClick={() => removeSelectedFile(index)}
                                     aria-label={`Remover ${preview.name} da seleção`}
-                                    className="
-                                        absolute
-                                        right-1.5
-                                        top-1.5
-                                        inline-flex
-                                        size-7
-                                        items-center
-                                        justify-center
-                                        rounded-full
-                                        bg-black/65
-                                        text-white
-                                        transition-colors
-                                        hover:bg-black/80
-                                    "
+                                    className="absolute top-1.5 right-1.5 inline-flex size-7 items-center justify-center rounded-full bg-black/65 text-white transition-colors hover:bg-black/80"
                                 >
                                     <X className="size-3.5" />
                                 </button>
 
-                                <p className="truncate px-2 py-1.5 text-xs text-[var(--admin-text-muted)]">
-                                    {preview.name}
-                                </p>
+                                <p className="truncate px-2 py-1.5 text-xs text-[var(--admin-text-muted)]">{preview.name}</p>
                             </div>
                         ))}
                     </div>
@@ -325,30 +266,12 @@ export default function ProductImages({
                             className="overflow-hidden rounded-xl border border-[var(--admin-border)] bg-[var(--admin-background)]"
                         >
                             <div className="relative aspect-square w-full overflow-hidden bg-[var(--admin-background-soft)]">
-                                <img
-                                    src={image.url}
-                                    alt={`Imagem ${index + 1} do produto`}
-                                    className="size-full object-cover"
-                                />
+                                <img src={image.url} alt={`Imagem ${index + 1} do produto`} className="size-full object-cover" />
 
                                 <span
-                                    className={`
-                                        absolute
-                                        left-2.5
-                                        top-2.5
-                                        inline-flex
-                                        rounded-full
-                                        px-2.5
-                                        py-0.5
-                                        text-xs
-                                        font-semibold
-                                        shadow-sm
-                                        ${
-                                            index === 0
-                                                ? 'bg-[var(--admin-primary)] text-white'
-                                                : 'bg-white/90 text-[var(--admin-text)]'
-                                        }
-                                    `}
+                                    className={`absolute top-2.5 left-2.5 inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-sm ${
+                                        index === 0 ? 'bg-[var(--admin-primary)] text-white' : 'bg-white/90 text-[var(--admin-text)]'
+                                    } `}
                                 >
                                     {index === 0 ? 'Principal' : `#${index + 1}`}
                                 </span>
@@ -359,9 +282,7 @@ export default function ProductImages({
                                     <button
                                         type="button"
                                         disabled={busy || index === 0}
-                                        onClick={() =>
-                                            moveImage(index, index - 1)
-                                        }
+                                        onClick={() => moveImage(index, index - 1)}
                                         aria-label="Mover imagem para esquerda"
                                         title="Mover para esquerda"
                                         className="inline-flex size-8 items-center justify-center rounded-lg text-[var(--admin-text-muted)] transition-colors hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-text)] disabled:opacity-35"
@@ -371,12 +292,8 @@ export default function ProductImages({
 
                                     <button
                                         type="button"
-                                        disabled={
-                                            busy || index === images.length - 1
-                                        }
-                                        onClick={() =>
-                                            moveImage(index, index + 1)
-                                        }
+                                        disabled={busy || index === images.length - 1}
+                                        onClick={() => moveImage(index, index + 1)}
                                         aria-label="Mover imagem para direita"
                                         title="Mover para direita"
                                         className="inline-flex size-8 items-center justify-center rounded-lg text-[var(--admin-text-muted)] transition-colors hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-text)] disabled:opacity-35"
@@ -414,18 +331,12 @@ export default function ProductImages({
                 </div>
             ) : (
                 <div className="flex min-h-44 flex-col items-center justify-center rounded-xl border border-dashed border-[var(--admin-border)] bg-[var(--admin-background-soft)] px-6 text-center">
-                    <ImagePlus
-                        className="mb-3 size-8 text-[var(--admin-text-muted)]"
-                        aria-hidden="true"
-                    />
+                    <ImagePlus className="mb-3 size-8 text-[var(--admin-text-muted)]" aria-hidden="true" />
 
-                    <p className="text-sm font-medium text-[var(--admin-text)]">
-                        Nenhuma imagem cadastrada
-                    </p>
+                    <p className="text-sm font-medium text-[var(--admin-text)]">Nenhuma imagem cadastrada</p>
 
                     <p className="mt-1 max-w-sm text-xs leading-relaxed text-[var(--admin-text-muted)]">
-                        Selecione uma ou mais fotos para montar a galeria deste
-                        produto na loja.
+                        Selecione uma ou mais fotos para montar a galeria deste produto na loja.
                     </p>
                 </div>
             )}

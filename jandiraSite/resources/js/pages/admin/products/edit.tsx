@@ -1,20 +1,13 @@
+import ProductForm, { type Category, type ProductFormData } from '@/components/product-form';
 import AppLayout from '@/layouts/app-layout';
-import ProductForm, {
-    type Category,
-    type ProductFormData,
-} from '@/components/product-form';
 
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
-import ProductImages, {
-    type ProductImageItem,
-} from '@/components/product-images';
-import ProductVariants, {
-    type ProductVariant,
-} from '@/components/product-variants';
+import ProductImages, { type ProductImageItem } from '@/components/product-images';
+import ProductVariants, { type ProductVariant } from '@/components/product-variants';
 
 type Product = {
     id: number;
@@ -39,10 +32,7 @@ type PageProps = {
     };
 };
 
-export default function ProductsEdit({
-    product,
-    categories,
-}: Props) {
+export default function ProductsEdit({ product, categories }: Props) {
     const { flash } = usePage<PageProps>().props;
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -55,13 +45,7 @@ export default function ProductsEdit({
         },
     ];
 
-    const {
-        data,
-        setData,
-        put,
-        processing,
-        errors,
-    } = useForm<ProductFormData>({
+    const { data, setData, put, processing, errors } = useForm<ProductFormData>({
         name: product.name,
         category_id: String(product.category_id),
         description: product.description ?? '',
@@ -83,36 +67,16 @@ export default function ProductsEdit({
                 <section>
                     <Link
                         href="/admin/produtos"
-                        className="
-                            mb-3
-                            inline-flex
-                            items-center
-                            gap-2
-                            text-sm
-                            font-medium
-                            text-[var(--admin-text-muted)]
-                            transition-colors
-                            hover:text-[var(--admin-primary)]
-                        "
+                        className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-[var(--admin-text-muted)] transition-colors hover:text-[var(--admin-primary)]"
                     >
-                        <ArrowLeft
-                            className="size-4"
-                            aria-hidden="true"
-                        />
-
+                        <ArrowLeft className="size-4" aria-hidden="true" />
                         Voltar para produtos
                     </Link>
 
-                    <h1 className="text-2xl font-semibold text-[var(--admin-text)]">
-                        Editar produto
-                    </h1>
+                    <h1 className="text-2xl font-semibold text-[var(--admin-text)]">Editar produto</h1>
 
                     <p className="mt-1 text-sm text-[var(--admin-text-muted)]">
-                        Atualize as informações principais de{' '}
-                        <span className="font-medium text-[var(--admin-text)]">
-                            {product.name}
-                        </span>
-                        .
+                        Atualize as informações principais de <span className="font-medium text-[var(--admin-text)]">{product.name}</span>.
                     </p>
                 </section>
 
@@ -123,9 +87,7 @@ export default function ProductsEdit({
                 )}
 
                 {flash?.error && (
-                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                        {flash.error}
-                    </div>
+                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{flash.error}</div>
                 )}
 
                 <ProductForm
@@ -137,14 +99,8 @@ export default function ProductsEdit({
                     onChange={setData}
                     onSubmit={submit}
                 />
-                <ProductImages
-                    productId={product.id}
-                    images={product.images}
-                />
-                <ProductVariants
-                    productId={product.id}
-                    variants={product.variants}
-                />
+                <ProductImages productId={product.id} images={product.images} />
+                <ProductVariants productId={product.id} variants={product.variants} />
             </main>
         </AppLayout>
     );

@@ -34,10 +34,10 @@ Route::middleware('auth')
                 ->parameters(['produtos' => 'product'])
                 ->names('products');
 
-            // /admin/produtos/{product}/variacoes — store, update, destroy
+            // /admin/produtos/{product}/variacoes — store, update (desativação pelo campo active)
             // scoped(): a variação precisa pertencer ao produto da URL (senão 404)
             Route::resource('produtos.variacoes', ProductVariantController::class)
-                ->only(['store', 'update', 'destroy'])
+                ->only(['store', 'update'])
                 ->parameters(['produtos' => 'product', 'variacoes' => 'variant'])
                 ->names('product-variants')
                 ->scoped();

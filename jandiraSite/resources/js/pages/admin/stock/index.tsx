@@ -2,17 +2,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import {
-    AlertTriangle,
-    Boxes,
-    Check,
-    Layers,
-    Minus,
-    PackageX,
-    Pencil,
-    Plus,
-    Search,
-} from 'lucide-react';
+import { AlertTriangle, Boxes, Check, Layers, Minus, PackageX, Pencil, Plus, Search } from 'lucide-react';
 import { FormEventHandler, useEffect, useState } from 'react';
 
 type StockStatusFilter = 'todos' | 'disponivel' | 'baixo' | 'zerado';
@@ -133,30 +123,17 @@ export default function StockIndex({ variants, stats, filters }: Props) {
 
             <main className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
                 <section>
-                    <h1 className="text-2xl font-semibold text-[var(--admin-text)]">
-                        Estoque
-                    </h1>
+                    <h1 className="text-2xl font-semibold text-[var(--admin-text)]">Estoque</h1>
 
                     <p className="mt-1 text-sm text-[var(--admin-text-muted)]">
-                        Acompanhe as quantidades disponíveis e ajuste o estoque de
-                        cada variação rapidamente.
+                        Acompanhe as quantidades disponíveis e ajuste o estoque de cada variação rapidamente.
                     </p>
                 </section>
 
                 <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <SummaryCard
-                        title="Unidades em estoque"
-                        value={stats.total_units}
-                        description="Soma total de todas as variações"
-                        icon={Boxes}
-                    />
+                    <SummaryCard title="Unidades em estoque" value={stats.total_units} description="Soma total de todas as variações" icon={Boxes} />
 
-                    <SummaryCard
-                        title="Variações"
-                        value={stats.total_variants}
-                        description="Opções de produtos cadastradas"
-                        icon={Layers}
-                    />
+                    <SummaryCard title="Variações" value={stats.total_variants} description="Opções de produtos cadastradas" icon={Layers} />
 
                     <SummaryCard
                         title="Estoque baixo"
@@ -165,11 +142,7 @@ export default function StockIndex({ variants, stats, filters }: Props) {
                         icon={AlertTriangle}
                         tone="warning"
                         active={filters.status === 'baixo'}
-                        onClick={() =>
-                            handleStatusChange(
-                                filters.status === 'baixo' ? 'todos' : 'baixo',
-                            )
-                        }
+                        onClick={() => handleStatusChange(filters.status === 'baixo' ? 'todos' : 'baixo')}
                     />
 
                     <SummaryCard
@@ -179,11 +152,7 @@ export default function StockIndex({ variants, stats, filters }: Props) {
                         icon={PackageX}
                         tone="danger"
                         active={filters.status === 'zerado'}
-                        onClick={() =>
-                            handleStatusChange(
-                                filters.status === 'zerado' ? 'todos' : 'zerado',
-                            )
-                        }
+                        onClick={() => handleStatusChange(filters.status === 'zerado' ? 'todos' : 'zerado')}
                     />
                 </section>
 
@@ -194,42 +163,21 @@ export default function StockIndex({ variants, stats, filters }: Props) {
                 )}
 
                 {flash?.error && (
-                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                        {flash.error}
-                    </div>
+                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{flash.error}</div>
                 )}
 
                 <section className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] shadow-sm">
                     <div className="flex flex-col gap-4 border-b border-[var(--admin-border)] p-4 md:flex-row md:items-center md:justify-between md:p-5">
-                        <form
-                            onSubmit={handleSearchSubmit}
-                            className="flex w-full max-w-md items-center gap-2"
-                        >
+                        <form onSubmit={handleSearchSubmit} className="flex w-full max-w-md items-center gap-2">
                             <div className="relative flex-1">
-                                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[var(--admin-text-muted)]" />
+                                <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[var(--admin-text-muted)]" />
 
                                 <input
                                     type="search"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder="Buscar por produto, variação ou SKU..."
-                                    className="
-                                        h-10
-                                        w-full
-                                        rounded-xl
-                                        border
-                                        border-[var(--admin-border)]
-                                        bg-[var(--admin-background)]
-                                        pl-9
-                                        pr-3
-                                        text-sm
-                                        text-[var(--admin-text)]
-                                        outline-none
-                                        placeholder:text-[var(--admin-text-muted)]
-                                        focus:border-[var(--admin-primary)]
-                                        focus:ring-2
-                                        focus:ring-[var(--admin-primary)]/10
-                                    "
+                                    className="h-10 w-full rounded-xl border border-[var(--admin-border)] bg-[var(--admin-background)] pr-3 pl-9 text-sm text-[var(--admin-text)] outline-none placeholder:text-[var(--admin-text-muted)] focus:border-[var(--admin-primary)] focus:ring-2 focus:ring-[var(--admin-primary)]/10"
                                 />
                             </div>
 
@@ -250,23 +198,12 @@ export default function StockIndex({ variants, stats, filters }: Props) {
                                     <button
                                         key={option.value}
                                         type="button"
-                                        onClick={() =>
-                                            handleStatusChange(option.value)
-                                        }
-                                        className={`
-                                            h-9
-                                            rounded-xl
-                                            border
-                                            px-3
-                                            text-xs
-                                            font-medium
-                                            transition-colors
-                                            ${
-                                                selected
-                                                    ? 'border-[var(--admin-primary)] bg-[var(--admin-background-soft)] text-[var(--admin-primary)]'
-                                                    : 'border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-muted)] hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-text)]'
-                                            }
-                                        `}
+                                        onClick={() => handleStatusChange(option.value)}
+                                        className={`h-9 rounded-xl border px-3 text-xs font-medium transition-colors ${
+                                            selected
+                                                ? 'border-[var(--admin-primary)] bg-[var(--admin-background-soft)] text-[var(--admin-primary)]'
+                                                : 'border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-muted)] hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-text)]'
+                                        } `}
                                     >
                                         {option.label}
                                     </button>
@@ -283,32 +220,20 @@ export default function StockIndex({ variants, stats, filters }: Props) {
                                     <TableHeader>Variação / SKU</TableHeader>
                                     <TableHeader>Situação</TableHeader>
                                     <TableHeader>Estoque</TableHeader>
-                                    <TableHeader className="text-right">
-                                        Ações
-                                    </TableHeader>
+                                    <TableHeader className="text-right">Ações</TableHeader>
                                 </tr>
                             </thead>
 
                             <tbody>
                                 {variants.data.length > 0 ? (
                                     variants.data.map((variant) => (
-                                        <StockRow
-                                            key={variant.id}
-                                            variant={variant}
-                                            lowThreshold={
-                                                stats.low_stock_threshold
-                                            }
-                                        />
+                                        <StockRow key={variant.id} variant={variant} lowThreshold={stats.low_stock_threshold} />
                                     ))
                                 ) : (
                                     <tr>
-                                        <td
-                                            colSpan={5}
-                                            className="px-4 py-12 text-center"
-                                        >
+                                        <td colSpan={5} className="px-4 py-12 text-center">
                                             <p className="text-sm text-[var(--admin-text-muted)]">
-                                                Nenhuma variação encontrada para
-                                                os filtros selecionados.
+                                                Nenhuma variação encontrada para os filtros selecionados.
                                             </p>
                                         </td>
                                     </tr>
@@ -320,18 +245,12 @@ export default function StockIndex({ variants, stats, filters }: Props) {
                     {variants.last_page > 1 && (
                         <div className="flex flex-col items-center justify-between gap-3 border-t border-[var(--admin-border)] px-4 py-4 sm:flex-row md:px-5">
                             <p className="text-xs text-[var(--admin-text-muted)]">
-                                Mostrando {variants.from ?? 0} a{' '}
-                                {variants.to ?? 0} de {variants.total} variações
+                                Mostrando {variants.from ?? 0} a {variants.to ?? 0} de {variants.total} variações
                             </p>
 
-                            <nav
-                                aria-label="Paginação do estoque"
-                                className="flex flex-wrap items-center gap-1"
-                            >
+                            <nav aria-label="Paginação do estoque" className="flex flex-wrap items-center gap-1">
                                 {variants.links.map((link, index) => {
-                                    const label = formatPaginationLabel(
-                                        link.label,
-                                    );
+                                    const label = formatPaginationLabel(link.label);
 
                                     if (!link.url) {
                                         return (
@@ -350,23 +269,11 @@ export default function StockIndex({ variants, stats, filters }: Props) {
                                             href={link.url}
                                             preserveScroll
                                             preserveState
-                                            className={`
-                                                inline-flex
-                                                h-8
-                                                min-w-8
-                                                items-center
-                                                justify-center
-                                                rounded-lg
-                                                px-2.5
-                                                text-xs
-                                                font-medium
-                                                transition-colors
-                                                ${
-                                                    link.active
-                                                        ? 'bg-[var(--admin-primary)] text-white'
-                                                        : 'border border-[var(--admin-border)] text-[var(--admin-text-muted)] hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-text)]'
-                                                }
-                                            `}
+                                            className={`inline-flex h-8 min-w-8 items-center justify-center rounded-lg px-2.5 text-xs font-medium transition-colors ${
+                                                link.active
+                                                    ? 'bg-[var(--admin-primary)] text-white'
+                                                    : 'border border-[var(--admin-border)] text-[var(--admin-text-muted)] hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-text)]'
+                                            } `}
                                         >
                                             {label}
                                         </Link>
@@ -381,13 +288,7 @@ export default function StockIndex({ variants, stats, filters }: Props) {
     );
 }
 
-function StockRow({
-    variant,
-    lowThreshold,
-}: {
-    variant: StockVariant;
-    lowThreshold: number;
-}) {
+function StockRow({ variant, lowThreshold }: { variant: StockVariant; lowThreshold: number }) {
     const [stockValue, setStockValue] = useState(String(variant.stock));
     const [saving, setSaving] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -398,11 +299,7 @@ function StockRow({
     }, [variant.stock]);
 
     const parsed = Number.parseInt(stockValue, 10);
-    const isValid =
-        stockValue.trim() !== '' &&
-        !Number.isNaN(parsed) &&
-        parsed >= 0 &&
-        String(parsed) === stockValue.trim();
+    const isValid = stockValue.trim() !== '' && !Number.isNaN(parsed) && parsed >= 0 && String(parsed) === stockValue.trim();
     const isDirty = isValid && parsed !== variant.stock;
 
     const adjustBy = (delta: number) => {
@@ -428,9 +325,7 @@ function StockRow({
                 },
                 onFinish: () => setSaving(false),
                 onError: (errors) => {
-                    setErrorMessage(
-                        errors.stock ?? 'Não foi possível atualizar o estoque.',
-                    );
+                    setErrorMessage(errors.stock ?? 'Não foi possível atualizar o estoque.');
                 },
             },
         );
@@ -442,39 +337,26 @@ function StockRow({
         <tr className="border-b border-[var(--admin-border)] transition-colors last:border-b-0 hover:bg-[var(--admin-background-soft)]">
             <TableCell>
                 <div className="min-w-0">
-                    <p className="truncate font-medium text-[var(--admin-text)]">
-                        {variant.product?.name ?? 'Produto removido'}
-                    </p>
+                    <p className="truncate font-medium text-[var(--admin-text)]">{variant.product?.name ?? 'Produto removido'}</p>
 
-                    <p className="mt-1 truncate text-xs text-[var(--admin-text-muted)]">
-                        {variant.product?.category?.name ?? 'Sem categoria'}
-                    </p>
+                    <p className="mt-1 truncate text-xs text-[var(--admin-text-muted)]">{variant.product?.category?.name ?? 'Sem categoria'}</p>
                 </div>
             </TableCell>
 
             <TableCell>
                 <div className="min-w-0">
-                    <p className="font-medium text-[var(--admin-text)]">
-                        {variant.name}
-                    </p>
+                    <p className="font-medium text-[var(--admin-text)]">{variant.name}</p>
 
-                    <p className="mt-1 text-xs text-[var(--admin-text-muted)]">
-                        {variant.sku ? `SKU: ${variant.sku}` : 'Sem SKU'}
-                    </p>
+                    <p className="mt-1 text-xs text-[var(--admin-text-muted)]">{variant.sku ? `SKU: ${variant.sku}` : 'Sem SKU'}</p>
                 </div>
             </TableCell>
 
             <TableCell>
                 <div className="flex flex-wrap items-center gap-1.5">
-                    <StockBadge
-                        stock={variant.stock}
-                        lowThreshold={lowThreshold}
-                    />
+                    <StockBadge stock={variant.stock} lowThreshold={lowThreshold} />
 
                     {isInactive && (
-                        <span className="inline-flex rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-600">
-                            Inativo
-                        </span>
+                        <span className="inline-flex rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-600">Inativo</span>
                     )}
                 </div>
             </TableCell>
@@ -508,23 +390,7 @@ function StockRow({
                                 }
                             }}
                             aria-label={`Estoque de ${variant.name}`}
-                            className="
-                                h-8
-                                w-20
-                                rounded-lg
-                                border
-                                border-[var(--admin-border)]
-                                bg-[var(--admin-background)]
-                                px-2
-                                text-center
-                                text-sm
-                                font-medium
-                                text-[var(--admin-text)]
-                                outline-none
-                                focus:border-[var(--admin-primary)]
-                                focus:ring-2
-                                focus:ring-[var(--admin-primary)]/10
-                            "
+                            className="h-8 w-20 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-background)] px-2 text-center text-sm font-medium text-[var(--admin-text)] outline-none focus:border-[var(--admin-primary)] focus:ring-2 focus:ring-[var(--admin-primary)]/10"
                         />
 
                         <button
@@ -541,29 +407,14 @@ function StockRow({
                             type="button"
                             onClick={handleSave}
                             disabled={!isDirty || saving}
-                            className="
-                                auth-primary-button
-                                inline-flex
-                                h-8
-                                items-center
-                                gap-1.5
-                                rounded-lg
-                                px-3
-                                text-xs
-                                font-semibold
-                                text-white
-                                disabled:cursor-not-allowed
-                                disabled:opacity-40
-                            "
+                            className="auth-primary-button inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             <Check className="size-3.5" />
                             {saving ? 'Salvando...' : 'Salvar'}
                         </button>
                     </div>
 
-                    {errorMessage && (
-                        <p className="text-xs text-red-600">{errorMessage}</p>
-                    )}
+                    {errorMessage && <p className="text-xs text-red-600">{errorMessage}</p>}
                 </div>
             </TableCell>
 
@@ -611,25 +462,17 @@ function SummaryCard({
         <>
             <div className="flex items-start justify-between gap-4">
                 <div>
-                    <p className="text-sm font-medium text-[var(--admin-text-muted)]">
-                        {title}
-                    </p>
+                    <p className="text-sm font-medium text-[var(--admin-text-muted)]">{title}</p>
 
-                    <p className="mt-2 text-2xl font-semibold text-[var(--admin-text)]">
-                        {value}
-                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-[var(--admin-text)]">{value}</p>
                 </div>
 
-                <div
-                    className={`flex size-10 items-center justify-center rounded-xl ${iconTone}`}
-                >
+                <div className={`flex size-10 items-center justify-center rounded-xl ${iconTone}`}>
                     <Icon className="size-5" aria-hidden="true" />
                 </div>
             </div>
 
-            <p className="mt-3 text-xs text-[var(--admin-text-muted)]">
-                {description}
-            </p>
+            <p className="mt-3 text-xs text-[var(--admin-text-muted)]">{description}</p>
         </>
     );
 
@@ -638,109 +481,42 @@ function SummaryCard({
             <button
                 type="button"
                 onClick={onClick}
-                className={`
-                    rounded-2xl
-                    border
-                    bg-[var(--admin-surface)]
-                    p-5
-                    text-left
-                    shadow-sm
-                    transition-colors
-                    ${
-                        active
-                            ? 'border-[var(--admin-primary)] ring-2 ring-[var(--admin-primary)]/15'
-                            : 'border-[var(--admin-border)] hover:border-[var(--admin-primary-light)]'
-                    }
-                `}
+                className={`rounded-2xl border bg-[var(--admin-surface)] p-5 text-left shadow-sm transition-colors ${
+                    active
+                        ? 'border-[var(--admin-primary)] ring-2 ring-[var(--admin-primary)]/15'
+                        : 'border-[var(--admin-border)] hover:border-[var(--admin-primary-light)]'
+                } `}
             >
                 {content}
             </button>
         );
     }
 
-    return (
-        <article className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] p-5 shadow-sm">
-            {content}
-        </article>
-    );
+    return <article className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] p-5 shadow-sm">{content}</article>;
 }
 
-function StockBadge({
-    stock,
-    lowThreshold,
-}: {
-    stock: number;
-    lowThreshold: number;
-}) {
+function StockBadge({ stock, lowThreshold }: { stock: number; lowThreshold: number }) {
     if (stock <= 0) {
-        return (
-            <span className="inline-flex rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700">
-                Sem estoque
-            </span>
-        );
+        return <span className="inline-flex rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700">Sem estoque</span>;
     }
 
     if (stock <= lowThreshold) {
-        return (
-            <span className="inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
-                Estoque baixo
-            </span>
-        );
+        return <span className="inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">Estoque baixo</span>;
     }
 
-    return (
-        <span className="inline-flex rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
-            Disponível
-        </span>
-    );
+    return <span className="inline-flex rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">Disponível</span>;
 }
 
-function TableHeader({
-    children,
-    className = '',
-}: {
-    children: React.ReactNode;
-    className?: string;
-}) {
+function TableHeader({ children, className = '' }: { children: React.ReactNode; className?: string }) {
     return (
-        <th
-            className={`
-                px-4
-                py-3
-                text-left
-                text-xs
-                font-semibold
-                uppercase
-                tracking-wide
-                text-[var(--admin-text-muted)]
-                ${className}
-            `}
-        >
+        <th className={`px-4 py-3 text-left text-xs font-semibold tracking-wide text-[var(--admin-text-muted)] uppercase ${className} `}>
             {children}
         </th>
     );
 }
 
-function TableCell({
-    children,
-    className = '',
-}: {
-    children: React.ReactNode;
-    className?: string;
-}) {
-    return (
-        <td
-            className={`
-                px-4
-                py-4
-                text-sm
-                text-[var(--admin-text-muted)]
-                ${className}
-            `}
-        >
-            {children}
-        </td>
-    );
+function TableCell({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+    return <td className={`px-4 py-4 text-sm text-[var(--admin-text-muted)] ${className} `}>{children}</td>;
 }
 
 function formatPaginationLabel(raw: string): string {
