@@ -7,24 +7,52 @@ use App\Http\Requests\Admin\ProductRequest;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProductController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $search = trim($request->string('busca')->toString());
+        $status = $request->string('status')->toString();
+
+        if (! in_array($status, ['todos', 'ativos', 'inativos', 'destaques'], true)) {
+            $status = 'todos';
+        }
+
         $products = Product::query()
             ->with([
                 'category',
                 'variants',
             ])
+            ->when($search !== '', function ($query) use ($search) {
+                $pattern = "%{$search}%";
+
+                $query->where(function ($subQuery) use ($pattern) {
+                    $subQuery
+                        ->where('name', 'ilike', $pattern)
+                        ->orWhere('slug', 'ilike', $pattern)
+                        ->orWhereHas('category', function ($categoryQuery) use ($pattern) {
+                            $categoryQuery->where('name', 'ilike', $pattern);
+                        });
+                });
+            })
+            ->when($status === 'ativos', fn ($query) => $query->where('active', true))
+            ->when($status === 'inativos', fn ($query) => $query->where('active', false))
+            ->when($status === 'destaques', fn ($query) => $query->where('featured', true))
             ->latest()
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         return Inertia::render('admin/products/index', [
             'products' => $products,
+            'filters' => [
+                'busca' => $search,
+                'status' => $status,
+            ],
         ]);
     }
 
