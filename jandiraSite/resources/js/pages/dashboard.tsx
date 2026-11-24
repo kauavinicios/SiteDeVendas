@@ -127,20 +127,23 @@ export default function Dashboard({ stats, recentProducts }: DashboardProps) {
                         {recentProducts.length > 0 ? (
                             <div className="divide-y divide-[var(--admin-border)]">
                                 {recentProducts.map((product) => (
-                                    <div
+                                    <Link
                                         key={product.id}
+                                        href={`/admin/produtos/${product.id}/edit`}
                                         className="
+                                            group
                                             flex
                                             items-center
                                             justify-between
                                             gap-4
                                             py-4
+                                            transition-colors
                                             first:pt-0
                                             last:pb-0
                                         "
                                     >
                                         <div className="min-w-0">
-                                            <p className="truncate text-sm font-medium text-[var(--admin-text)]">
+                                            <p className="truncate text-sm font-medium text-[var(--admin-text)] transition-colors group-hover:text-[var(--admin-primary)]">
                                                 {product.name}
                                             </p>
 
@@ -158,7 +161,7 @@ export default function Dashboard({ stats, recentProducts }: DashboardProps) {
                                                 em estoque
                                             </p>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))}
                             </div>
                         ) : (
@@ -214,10 +217,24 @@ export default function Dashboard({ stats, recentProducts }: DashboardProps) {
                             />
 
                             <QuickAction
-                                href="/admin/produtos"
+                                href="/admin/produtos/create"
                                 icon={Plus}
                                 title="Adicionar produto"
                                 description="Cadastre um novo item na loja."
+                            />
+
+                            <QuickAction
+                                href="/admin/categorias"
+                                icon={Tags}
+                                title="Gerenciar categorias"
+                                description="Organize departamentos e subcategorias."
+                            />
+
+                            <QuickAction
+                                href="/admin/estoque"
+                                icon={Boxes}
+                                title="Controlar estoque"
+                                description="Ajuste quantidades e acompanhe alertas."
                             />
                         </div>
                     </div>

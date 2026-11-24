@@ -11,6 +11,7 @@ import { Link, usePage } from '@inertiajs/react';
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
     const page = usePage();
+    const currentPath = page.url.split('?')[0];
 
     return (
         <SidebarGroup className="px-2 py-0">
@@ -31,15 +32,15 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
             <SidebarMenu className="gap-1">
                 {items.map((item) => {
                     const isActive =
-                        page.url === item.url ||
-                        page.url.startsWith(`${item.url}/`);
+                        currentPath === item.url ||
+                        currentPath.startsWith(`${item.url}/`);
 
                     return (
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton
                                 asChild
                                 isActive={isActive}
-                                className={`
+                                className="
                                     h-10
                                     rounded-xl
                                     px-3
@@ -47,16 +48,10 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                     transition-colors
                                     hover:bg-[var(--admin-background-soft)]
                                     hover:text-[var(--admin-primary)]
-
-                                    data-[active=true]:
-                                    bg-[var(--admin-background-soft)]
-
-                                    data-[active=true]:
-                                    font-semibold
-
-                                    data-[active=true]:
-                                    text-[var(--admin-primary)]
-                                `}
+                                    data-[active=true]:bg-[var(--admin-background-soft)]
+                                    data-[active=true]:font-semibold
+                                    data-[active=true]:text-[var(--admin-primary)]
+                                "
                             >
                                 <Link href={item.url} prefetch>
                                     {item.icon && (
