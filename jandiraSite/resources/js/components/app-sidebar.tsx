@@ -9,42 +9,70 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-
+import { usePermissions } from '@/hooks/use-permissions';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import {
     Boxes,
     LayoutDashboard,
     Package,
+    ShieldCheck,
     Tags,
+    Users,
 } from 'lucide-react';
 
 import AppLogo from './app-logo';
 
-const mainNavItems: NavItem[] = [
+interface ProtectedNavItem extends NavItem {
+    permission: string;
+}
+
+const mainNavItems: ProtectedNavItem[] = [
     {
         title: 'Dashboard',
         url: '/admin/dashboard',
         icon: LayoutDashboard,
+        permission: 'access-admin',
     },
     {
         title: 'Produtos',
         url: '/admin/produtos',
         icon: Package,
+        permission: 'view-products',
     },
     {
         title: 'Categorias',
         url: '/admin/categorias',
         icon: Tags,
+        permission: 'view-categories',
     },
     {
         title: 'Estoque',
         url: '/admin/estoque',
         icon: Boxes,
+        permission: 'view-stock',
+    },
+    {
+        title: 'Clientes',
+        url: '/admin/clientes',
+        icon: Users,
+        permission: 'view-customers',
+    },
+    {
+        title: 'Usuários',
+        url: '/admin/usuarios',
+        icon: ShieldCheck,
+        permission: 'manage-users',
     },
 ];
 
 export function AppSidebar() {
+    const { can, roleLabel } = usePermissions();
+
+    const visibleItems: NavItem[] = mainNavItems
+        .filter((item) => can(item.permission))
+        .map(({ title, url, icon }) => ({ title, url, icon }));
+
     return (
         <Sidebar
             collapsible="icon"
@@ -71,10 +99,18 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent className="px-2">
-                <NavMain items={mainNavItems} />
+                <NavMain items={visibleItems} />
             </SidebarContent>
 
-            <SidebarFooter className="px-2 pb-3">
+            <SidebarFooter className="gap-2 px-2 pb-3">
+                {roleLabel && (
+                    <div className="px-2 group-data-[collapsible=icon]:hidden">
+                        <span className="inline-flex w-full items-center justify-center rounded-lg border border-[var(--admin-border)] bg-[var(--admin-background-soft)] px-2.5 py-1 text-[11px] font-medium text-[var(--admin-text-muted)]">
+                            Cargo: {roleLabel}
+                        </span>
+                    </div>
+                )}
+
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

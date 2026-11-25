@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
@@ -83,6 +84,9 @@ const statusOptions: { value: StockStatusFilter; label: string }[] = [
 
 export default function StockIndex({ variants, stats, filters }: Props) {
     const { flash } = usePage<PageProps>().props;
+    const { can } = usePermissions();
+    const canManageStock = can('manage-stock');
+    const canManageProducts = can('manage-products');
     const [search, setSearch] = useState(filters.busca);
 
     useEffect(() => {
@@ -220,18 +224,24 @@ export default function StockIndex({ variants, stats, filters }: Props) {
                                     <TableHeader>Variação / SKU</TableHeader>
                                     <TableHeader>Situação</TableHeader>
                                     <TableHeader>Estoque</TableHeader>
-                                    <TableHeader className="text-right">Ações</TableHeader>
+                                    {canManageProducts && <TableHeader className="text-right">Ações</TableHeader>}
                                 </tr>
                             </thead>
 
                             <tbody>
                                 {variants.data.length > 0 ? (
                                     variants.data.map((variant) => (
-                                        <StockRow key={variant.id} variant={variant} lowThreshold={stats.low_stock_threshold} />
+                                        <StockRow
+                                            key={variant.id}
+                                            variant={variant}
+                                            lowThreshold={stats.low_stock_threshold}
+                                            canManageStock={canManageStock}
+                                            canManageProducts={canManageProducts}
+                                        />
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={5} className="px-4 py-12 text-center">
+                                        <td colSpan={canManageProducts ? 5 : 4} className="px-4 py-12 text-center">
                                             <p className="text-sm text-[var(--admin-text-muted)]">
                                                 Nenhuma variação encontrada para os filtros selecionados.
                                             </p>
@@ -288,7 +298,17 @@ export default function StockIndex({ variants, stats, filters }: Props) {
     );
 }
 
-function StockRow({ variant, lowThreshold }: { variant: StockVariant; lowThreshold: number }) {
+function StockRow({
+    variant,
+    lowThreshold,
+    canManageStock,
+    canManageProducts,
+}: {
+    variant: StockVariant;
+    lowThreshold: number;
+    canManageStock: boolean;
+    canManageProducts: boolean;
+}) {
     const [stockValue, setStockValue] = useState(String(variant.stock));
     const [saving, setSaving] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -362,74 +382,82 @@ function StockRow({ variant, lowThreshold }: { variant: StockVariant; lowThresho
             </TableCell>
 
             <TableCell>
-                <div className="space-y-1">
-                    <div className="inline-flex items-center gap-1.5">
-                        <button
-                            type="button"
-                            onClick={() => adjustBy(-1)}
-                            disabled={saving || (isValid && parsed <= 0)}
-                            aria-label={`Diminuir estoque de ${variant.name}`}
-                            className="inline-flex size-8 items-center justify-center rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-muted)] transition-colors hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-text)] disabled:opacity-40"
-                        >
-                            <Minus className="size-3.5" />
-                        </button>
+                {canManageStock ? (
+                    <div className="space-y-1">
+                        <div className="inline-flex items-center gap-1.5">
+                            <button
+                                type="button"
+                                onClick={() => adjustBy(-1)}
+                                disabled={saving || (isValid && parsed <= 0)}
+                                aria-label={`Diminuir estoque de ${variant.name}`}
+                                className="inline-flex size-8 items-center justify-center rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-muted)] transition-colors hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-text)] disabled:opacity-40"
+                            >
+                                <Minus className="size-3.5" />
+                            </button>
 
-                        <input
-                            type="number"
-                            min={0}
-                            step={1}
-                            value={stockValue}
-                            onChange={(e) => {
-                                setStockValue(e.target.value);
-                                setErrorMessage(null);
-                            }}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    handleSave();
-                                }
-                            }}
-                            aria-label={`Estoque de ${variant.name}`}
-                            className="h-8 w-20 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-background)] px-2 text-center text-sm font-medium text-[var(--admin-text)] outline-none focus:border-[var(--admin-primary)] focus:ring-2 focus:ring-[var(--admin-primary)]/10"
-                        />
+                            <input
+                                type="number"
+                                min={0}
+                                step={1}
+                                value={stockValue}
+                                onChange={(e) => {
+                                    setStockValue(e.target.value);
+                                    setErrorMessage(null);
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleSave();
+                                    }
+                                }}
+                                aria-label={`Estoque de ${variant.name}`}
+                                className="h-8 w-20 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-background)] px-2 text-center text-sm font-medium text-[var(--admin-text)] outline-none focus:border-[var(--admin-primary)] focus:ring-2 focus:ring-[var(--admin-primary)]/10"
+                            />
 
-                        <button
-                            type="button"
-                            onClick={() => adjustBy(1)}
-                            disabled={saving}
-                            aria-label={`Aumentar estoque de ${variant.name}`}
-                            className="inline-flex size-8 items-center justify-center rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-muted)] transition-colors hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-text)] disabled:opacity-40"
-                        >
-                            <Plus className="size-3.5" />
-                        </button>
+                            <button
+                                type="button"
+                                onClick={() => adjustBy(1)}
+                                disabled={saving}
+                                aria-label={`Aumentar estoque de ${variant.name}`}
+                                className="inline-flex size-8 items-center justify-center rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-muted)] transition-colors hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-text)] disabled:opacity-40"
+                            >
+                                <Plus className="size-3.5" />
+                            </button>
 
-                        <button
-                            type="button"
-                            onClick={handleSave}
-                            disabled={!isDirty || saving}
-                            className="auth-primary-button inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                            <Check className="size-3.5" />
-                            {saving ? 'Salvando...' : 'Salvar'}
-                        </button>
+                            <button
+                                type="button"
+                                onClick={handleSave}
+                                disabled={!isDirty || saving}
+                                className="auth-primary-button inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                <Check className="size-3.5" />
+                                {saving ? 'Salvando...' : 'Salvar'}
+                            </button>
+                        </div>
+
+                        {errorMessage && <p className="text-xs text-red-600">{errorMessage}</p>}
                     </div>
-
-                    {errorMessage && <p className="text-xs text-red-600">{errorMessage}</p>}
-                </div>
-            </TableCell>
-
-            <TableCell className="text-right">
-                {variant.product && (
-                    <Link
-                        href={`/admin/produtos/${variant.product.id}/edit`}
-                        className="inline-flex size-9 items-center justify-center rounded-lg text-[var(--admin-text-muted)] transition-colors hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-primary)]"
-                        aria-label={`Editar produto ${variant.product.name}`}
-                        title="Editar produto"
-                    >
-                        <Pencil className="size-4" />
-                    </Link>
+                ) : (
+                    <span className="font-medium text-[var(--admin-text)]">
+                        {variant.stock} {variant.stock === 1 ? 'unidade' : 'unidades'}
+                    </span>
                 )}
             </TableCell>
+
+            {canManageProducts && (
+                <TableCell className="text-right">
+                    {variant.product && (
+                        <Link
+                            href={`/admin/produtos/${variant.product.id}/edit`}
+                            className="inline-flex size-9 items-center justify-center rounded-lg text-[var(--admin-text-muted)] transition-colors hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-primary)]"
+                            aria-label={`Editar produto ${variant.product.name}`}
+                            title="Editar produto"
+                        >
+                            <Pencil className="size-4" />
+                        </Link>
+                    )}
+                </TableCell>
+            )}
         </tr>
     );
 }

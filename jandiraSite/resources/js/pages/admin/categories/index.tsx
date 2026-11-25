@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 
@@ -52,6 +53,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function CategoriesIndex({ categories }: Props) {
     const { flash } = usePage<PageProps>().props;
+    const { can } = usePermissions();
+    const canManageCategories = can('manage-categories');
+    const canDeleteCategories = can('delete-categories');
+    const showActions = canManageCategories || canDeleteCategories;
     const [open, setOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
@@ -147,26 +152,28 @@ export default function CategoriesIndex({ categories }: Props) {
                         </p>
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={openCreateModal}
-                        className="
-                            auth-primary-button
-                            inline-flex
-                            h-10
-                            items-center
-                            justify-center
-                            gap-2
-                            rounded-xl
-                            px-4
-                            text-sm
-                            font-semibold
-                            text-white
-                        "
-                    >
-                        <Plus className="size-4" />
-                        Nova categoria
-                    </button>
+                    {canManageCategories && (
+                        <button
+                            type="button"
+                            onClick={openCreateModal}
+                            className="
+                                auth-primary-button
+                                inline-flex
+                                h-10
+                                items-center
+                                justify-center
+                                gap-2
+                                rounded-xl
+                                px-4
+                                text-sm
+                                font-semibold
+                                text-white
+                            "
+                        >
+                            <Plus className="size-4" />
+                            Nova categoria
+                        </button>
+                    )}
                 </section>
 
                 {flash?.success && (
@@ -190,7 +197,7 @@ export default function CategoriesIndex({ categories }: Props) {
                                     <TableHeader>Slug</TableHeader>
                                     <TableHeader>Categoria Pai</TableHeader>
                                     <TableHeader>Produtos</TableHeader>
-                                    <TableHeader className="text-right">Ações</TableHeader>
+                                    {showActions && <TableHeader className="text-right">Ações</TableHeader>}
                                 </tr>
                             </thead>
 
@@ -235,32 +242,38 @@ export default function CategoriesIndex({ categories }: Props) {
                                                 </span>
                                             </TableCell>
 
-                                            <TableCell className="text-right">
-                                                <div className="inline-flex items-center gap-1">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => openEditModal(category)}
-                                                        className="inline-flex size-9 items-center justify-center rounded-lg text-[var(--admin-text-muted)] transition-colors hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-primary)]"
-                                                        title="Editar categoria"
-                                                    >
-                                                        <Pencil className="size-4" />
-                                                    </button>
+                                            {showActions && (
+                                                <TableCell className="text-right">
+                                                    <div className="inline-flex items-center gap-1">
+                                                        {canManageCategories && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => openEditModal(category)}
+                                                                className="inline-flex size-9 items-center justify-center rounded-lg text-[var(--admin-text-muted)] transition-colors hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-primary)]"
+                                                                title="Editar categoria"
+                                                            >
+                                                                <Pencil className="size-4" />
+                                                            </button>
+                                                        )}
 
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleDelete(category)}
-                                                        className="inline-flex size-9 items-center justify-center rounded-lg text-[var(--admin-text-muted)] transition-colors hover:bg-red-50 hover:text-red-600"
-                                                        title="Excluir categoria"
-                                                    >
-                                                        <Trash2 className="size-4" />
-                                                    </button>
-                                                </div>
-                                            </TableCell>
+                                                        {canDeleteCategories && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleDelete(category)}
+                                                                className="inline-flex size-9 items-center justify-center rounded-lg text-[var(--admin-text-muted)] transition-colors hover:bg-red-50 hover:text-red-600"
+                                                                title="Excluir categoria"
+                                                            >
+                                                                <Trash2 className="size-4" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            )}
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={5} className="px-4 py-12 text-center">
+                                        <td colSpan={showActions ? 5 : 4} className="px-4 py-12 text-center">
                                             <p className="text-sm text-[var(--admin-text-muted)]">
                                                 Nenhuma categoria cadastrada.
                                             </p>
@@ -273,103 +286,105 @@ export default function CategoriesIndex({ categories }: Props) {
                 </section>
             </main>
 
-            <Dialog open={open} onOpenChange={(val) => !val && closeModal()}>
-                <DialogContent className="max-w-md border-[var(--admin-border)] bg-[var(--admin-surface)] p-6">
-                    <DialogHeader>
-                        <DialogTitle className="text-lg font-semibold text-[var(--admin-text)]">
-                            {editingCategory ? 'Editar categoria' : 'Nova categoria'}
-                        </DialogTitle>
-                        <DialogDescription className="text-sm text-[var(--admin-text-muted)]">
-                            {editingCategory
-                                ? 'Atualize as informações da categoria.'
-                                : 'Preencha os dados para criar uma nova categoria.'}
-                        </DialogDescription>
-                    </DialogHeader>
+            {canManageCategories && (
+                <Dialog open={open} onOpenChange={(val) => !val && closeModal()}>
+                    <DialogContent className="max-w-md border-[var(--admin-border)] bg-[var(--admin-surface)] p-6">
+                        <DialogHeader>
+                            <DialogTitle className="text-lg font-semibold text-[var(--admin-text)]">
+                                {editingCategory ? 'Editar categoria' : 'Nova categoria'}
+                            </DialogTitle>
+                            <DialogDescription className="text-sm text-[var(--admin-text-muted)]">
+                                {editingCategory
+                                    ? 'Atualize as informações da categoria.'
+                                    : 'Preencha os dados para criar uma nova categoria.'}
+                            </DialogDescription>
+                        </DialogHeader>
 
-                    <form onSubmit={submit} className="mt-4 space-y-4">
-                        <div className="space-y-2">
-                            <Label
-                                htmlFor="cat-name"
-                                className="text-sm font-medium text-[var(--admin-text)]"
-                            >
-                                Nome da categoria *
-                            </Label>
-                            <Input
-                                id="cat-name"
-                                value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
-                                placeholder="Ex: Cama, Mesa, Perfumaria..."
-                                className="h-11 rounded-xl border-[var(--admin-border)] bg-[var(--admin-background)]"
-                            />
-                            <InputError message={errors.name} />
-                        </div>
+                        <form onSubmit={submit} className="mt-4 space-y-4">
+                            <div className="space-y-2">
+                                <Label
+                                    htmlFor="cat-name"
+                                    className="text-sm font-medium text-[var(--admin-text)]"
+                                >
+                                    Nome da categoria *
+                                </Label>
+                                <Input
+                                    id="cat-name"
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
+                                    placeholder="Ex: Cama, Mesa, Perfumaria..."
+                                    className="h-11 rounded-xl border-[var(--admin-border)] bg-[var(--admin-background)]"
+                                />
+                                <InputError message={errors.name} />
+                            </div>
 
-                        <div className="space-y-2">
-                            <Label
-                                htmlFor="cat-slug"
-                                className="text-sm font-medium text-[var(--admin-text)]"
-                            >
-                                Slug (URL amigável)
-                            </Label>
-                            <Input
-                                id="cat-slug"
-                                value={data.slug}
-                                onChange={(e) => setData('slug', e.target.value)}
-                                placeholder="Deixe em branco para gerar automaticamente"
-                                className="h-11 rounded-xl border-[var(--admin-border)] bg-[var(--admin-background)]"
-                            />
-                            <InputError message={errors.slug} />
-                        </div>
+                            <div className="space-y-2">
+                                <Label
+                                    htmlFor="cat-slug"
+                                    className="text-sm font-medium text-[var(--admin-text)]"
+                                >
+                                    Slug (URL amigável)
+                                </Label>
+                                <Input
+                                    id="cat-slug"
+                                    value={data.slug}
+                                    onChange={(e) => setData('slug', e.target.value)}
+                                    placeholder="Deixe em branco para gerar automaticamente"
+                                    className="h-11 rounded-xl border-[var(--admin-border)] bg-[var(--admin-background)]"
+                                />
+                                <InputError message={errors.slug} />
+                            </div>
 
-                        <div className="space-y-2">
-                            <Label
-                                htmlFor="cat-parent"
-                                className="text-sm font-medium text-[var(--admin-text)]"
-                            >
-                                Categoria Pai (Opcional)
-                            </Label>
-                            <select
-                                id="cat-parent"
-                                value={data.parent_id}
-                                onChange={(e) => setData('parent_id', e.target.value)}
-                                className="h-11 w-full rounded-xl border border-[var(--admin-border)] bg-[var(--admin-background)] px-3 text-sm text-[var(--admin-text)] outline-none focus:ring-2 focus:ring-[var(--admin-primary)]"
-                            >
-                                <option value="">Nenhuma (Categoria Principal)</option>
-                                {availableParents.map((parent) => (
-                                    <option key={parent.id} value={parent.id}>
-                                        {parent.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <InputError message={errors.parent_id} />
-                        </div>
+                            <div className="space-y-2">
+                                <Label
+                                    htmlFor="cat-parent"
+                                    className="text-sm font-medium text-[var(--admin-text)]"
+                                >
+                                    Categoria Pai (Opcional)
+                                </Label>
+                                <select
+                                    id="cat-parent"
+                                    value={data.parent_id}
+                                    onChange={(e) => setData('parent_id', e.target.value)}
+                                    className="h-11 w-full rounded-xl border border-[var(--admin-border)] bg-[var(--admin-background)] px-3 text-sm text-[var(--admin-text)] outline-none focus:ring-2 focus:ring-[var(--admin-primary)]"
+                                >
+                                    <option value="">Nenhuma (Categoria Principal)</option>
+                                    {availableParents.map((parent) => (
+                                        <option key={parent.id} value={parent.id}>
+                                            {parent.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError message={errors.parent_id} />
+                            </div>
 
-                        <DialogFooter className="gap-2 sm:gap-2 pt-2">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={closeModal}
-                                disabled={processing}
-                                className="rounded-xl border-[var(--admin-border)]"
-                            >
-                                Cancelar
-                            </Button>
+                            <DialogFooter className="gap-2 sm:gap-2 pt-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={closeModal}
+                                    disabled={processing}
+                                    className="rounded-xl border-[var(--admin-border)]"
+                                >
+                                    Cancelar
+                                </Button>
 
-                            <Button
-                                type="submit"
-                                disabled={processing}
-                                className="auth-primary-button rounded-xl text-white"
-                            >
-                                {processing
-                                    ? 'Salvando...'
-                                    : editingCategory
-                                      ? 'Salvar alterações'
-                                      : 'Criar categoria'}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+                                <Button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="auth-primary-button rounded-xl text-white"
+                                >
+                                    {processing
+                                        ? 'Salvando...'
+                                        : editingCategory
+                                          ? 'Salvar alterações'
+                                          : 'Criar categoria'}
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+            )}
         </AppLayout>
     );
 }

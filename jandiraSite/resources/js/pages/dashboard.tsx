@@ -1,7 +1,8 @@
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { Boxes, Package, Plus, Star, Tags } from 'lucide-react';
+import { Boxes, Package, Plus, ShieldCheck, Star, Tags, Users } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -36,6 +37,9 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ stats, recentProducts }: DashboardProps) {
+    const { can } = usePermissions();
+    const canManageProducts = can('manage-products');
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
@@ -76,27 +80,46 @@ export default function Dashboard({ stats, recentProducts }: DashboardProps) {
 
                         {recentProducts.length > 0 ? (
                             <div className="divide-y divide-[var(--admin-border)]">
-                                {recentProducts.map((product) => (
-                                    <Link
-                                        key={product.id}
-                                        href={`/admin/produtos/${product.id}/edit`}
-                                        className="group flex items-center justify-between gap-4 py-4 transition-colors first:pt-0 last:pb-0"
-                                    >
-                                        <div className="min-w-0">
-                                            <p className="truncate text-sm font-medium text-[var(--admin-text)] transition-colors group-hover:text-[var(--admin-primary)]">
-                                                {product.name}
-                                            </p>
+                                {recentProducts.map((product) => {
+                                    const rowBody = (
+                                        <>
+                                            <div className="min-w-0">
+                                                <p className="truncate text-sm font-medium text-[var(--admin-text)] transition-colors group-hover:text-[var(--admin-primary)]">
+                                                    {product.name}
+                                                </p>
 
-                                            <p className="mt-1 text-xs text-[var(--admin-text-muted)]">{product.category?.name ?? 'Sem categoria'}</p>
+                                                <p className="mt-1 text-xs text-[var(--admin-text-muted)]">{product.category?.name ?? 'Sem categoria'}</p>
+                                            </div>
+
+                                            <div className="shrink-0 text-right">
+                                                <p className="text-sm font-medium text-[var(--admin-text)]">{product.stock}</p>
+
+                                                <p className="text-xs text-[var(--admin-text-muted)]">em estoque</p>
+                                            </div>
+                                        </>
+                                    );
+
+                                    if (canManageProducts) {
+                                        return (
+                                            <Link
+                                                key={product.id}
+                                                href={`/admin/produtos/${product.id}/edit`}
+                                                className="group flex items-center justify-between gap-4 py-4 transition-colors first:pt-0 last:pb-0"
+                                            >
+                                                {rowBody}
+                                            </Link>
+                                        );
+                                    }
+
+                                    return (
+                                        <div
+                                            key={product.id}
+                                            className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
+                                        >
+                                            {rowBody}
                                         </div>
-
-                                        <div className="shrink-0 text-right">
-                                            <p className="text-sm font-medium text-[var(--admin-text)]">{product.stock}</p>
-
-                                            <p className="text-xs text-[var(--admin-text-muted)]">em estoque</p>
-                                        </div>
-                                    </Link>
-                                ))}
+                                    );
+                                })}
                             </div>
                         ) : (
                             <div className="flex min-h-40 items-center justify-center rounded-xl border border-dashed border-[var(--admin-border)] bg-[var(--admin-background-soft)] px-4 text-center">
@@ -113,33 +136,59 @@ export default function Dashboard({ stats, recentProducts }: DashboardProps) {
                         </div>
 
                         <div className="grid gap-3">
-                            <QuickAction
-                                href="/admin/produtos"
-                                icon={Package}
-                                title="Gerenciar produtos"
-                                description="Visualize e edite o catálogo."
-                            />
+                            {can('view-products') && (
+                                <QuickAction
+                                    href="/admin/produtos"
+                                    icon={Package}
+                                    title={canManageProducts ? 'Gerenciar produtos' : 'Consultar produtos'}
+                                    description={canManageProducts ? 'Visualize e edite o catálogo.' : 'Consulte os itens e preços da loja.'}
+                                />
+                            )}
 
-                            <QuickAction
-                                href="/admin/produtos/create"
-                                icon={Plus}
-                                title="Adicionar produto"
-                                description="Cadastre um novo item na loja."
-                            />
+                            {canManageProducts && (
+                                <QuickAction
+                                    href="/admin/produtos/create"
+                                    icon={Plus}
+                                    title="Adicionar produto"
+                                    description="Cadastre um novo item na loja."
+                                />
+                            )}
 
-                            <QuickAction
-                                href="/admin/categorias"
-                                icon={Tags}
-                                title="Gerenciar categorias"
-                                description="Organize departamentos e subcategorias."
-                            />
+                            {can('view-categories') && (
+                                <QuickAction
+                                    href="/admin/categorias"
+                                    icon={Tags}
+                                    title={can('manage-categories') ? 'Gerenciar categorias' : 'Consultar categorias'}
+                                    description={can('manage-categories') ? 'Organize departamentos e subcategorias.' : 'Veja os departamentos da loja.'}
+                                />
+                            )}
 
-                            <QuickAction
-                                href="/admin/estoque"
-                                icon={Boxes}
-                                title="Controlar estoque"
-                                description="Ajuste quantidades e acompanhe alertas."
-                            />
+                            {can('view-stock') && (
+                                <QuickAction
+                                    href="/admin/estoque"
+                                    icon={Boxes}
+                                    title={can('manage-stock') ? 'Controlar estoque' : 'Consultar estoque'}
+                                    description={can('manage-stock') ? 'Ajuste quantidades e acompanhe alertas.' : 'Acompanhe a disponibilidade dos itens.'}
+                                />
+                            )}
+
+                            {can('view-customers') && (
+                                <QuickAction
+                                    href="/admin/clientes"
+                                    icon={Users}
+                                    title="Clientes"
+                                    description="Consulte clientes e inscritos em novidades."
+                                />
+                            )}
+
+                            {can('manage-users') && (
+                                <QuickAction
+                                    href="/admin/usuarios"
+                                    icon={ShieldCheck}
+                                    title="Usuários da equipe"
+                                    description="Gerencie cargos e acessos internos."
+                                />
+                            )}
                         </div>
                     </div>
                 </section>

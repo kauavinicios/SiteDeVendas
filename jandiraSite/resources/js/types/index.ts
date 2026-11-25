@@ -1,7 +1,15 @@
 import { LucideIcon } from 'lucide-react';
 
+export type UserRole =
+    | 'admin'
+    | 'manager'
+    | 'storekeeper'
+    | 'support'
+    | 'customer';
+
 export interface Auth {
-    user: User;
+    user: User | null;
+    permissions?: string[];
 }
 
 export interface BreadcrumbItem {
@@ -33,6 +41,12 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
+    phone?: string | null;
+    role?: UserRole;
+    role_label?: string;
+    is_staff?: boolean;
+    active?: boolean;
+    marketing_opt_in?: boolean;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;

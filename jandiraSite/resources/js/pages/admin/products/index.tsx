@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 
@@ -82,6 +83,8 @@ const statusOptions: { value: ProductStatusFilter; label: string }[] = [
 
 export default function ProductsIndex({ products, filters }: Props) {
     const { flash } = usePage<PageProps>().props;
+    const { can } = usePermissions();
+    const canManageProducts = can('manage-products');
     const [search, setSearch] = useState(filters.busca);
 
     useEffect(() => {
@@ -130,13 +133,15 @@ export default function ProductsIndex({ products, filters }: Props) {
                         <p className="mt-1 text-sm text-[var(--admin-text-muted)]">Gerencie os produtos disponíveis no catálogo da loja.</p>
                     </div>
 
-                    <Link
-                        href="/admin/produtos/create"
-                        className="auth-primary-button inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white"
-                    >
-                        <Plus className="size-4" />
-                        Novo produto
-                    </Link>
+                    {canManageProducts && (
+                        <Link
+                            href="/admin/produtos/create"
+                            className="auth-primary-button inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white"
+                        >
+                            <Plus className="size-4" />
+                            Novo produto
+                        </Link>
+                    )}
                 </section>
 
                 {flash?.success && (
@@ -211,7 +216,7 @@ export default function ProductsIndex({ products, filters }: Props) {
 
                                     <TableHeader>Destaque</TableHeader>
 
-                                    <TableHeader className="text-right">Ações</TableHeader>
+                                    {canManageProducts && <TableHeader className="text-right">Ações</TableHeader>}
                                 </tr>
                             </thead>
 
@@ -257,21 +262,23 @@ export default function ProductsIndex({ products, filters }: Props) {
                                                     )}
                                                 </TableCell>
 
-                                                <TableCell className="text-right">
-                                                    <Link
-                                                        href={`/admin/produtos/${product.id}/edit`}
-                                                        className="inline-flex size-9 items-center justify-center rounded-lg text-[var(--admin-text-muted)] transition-colors hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-primary)]"
-                                                        aria-label={`Editar ${product.name}`}
-                                                    >
-                                                        <Pencil className="size-4" />
-                                                    </Link>
-                                                </TableCell>
+                                                {canManageProducts && (
+                                                    <TableCell className="text-right">
+                                                        <Link
+                                                            href={`/admin/produtos/${product.id}/edit`}
+                                                            className="inline-flex size-9 items-center justify-center rounded-lg text-[var(--admin-text-muted)] transition-colors hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-primary)]"
+                                                            aria-label={`Editar ${product.name}`}
+                                                        >
+                                                            <Pencil className="size-4" />
+                                                        </Link>
+                                                    </TableCell>
+                                                )}
                                             </tr>
                                         );
                                     })
                                 ) : (
                                     <tr>
-                                        <td colSpan={7} className="px-4 py-12 text-center">
+                                        <td colSpan={canManageProducts ? 7 : 6} className="px-4 py-12 text-center">
                                             <p className="text-sm text-[var(--admin-text-muted)]">
                                                 {hasActiveFilter
                                                     ? 'Nenhum produto encontrado para os filtros selecionados.'
