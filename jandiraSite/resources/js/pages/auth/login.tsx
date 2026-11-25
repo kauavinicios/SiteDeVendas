@@ -50,7 +50,7 @@ export default function Login({
     return (
         <AuthLayout
             title="Bem-vindo de volta"
-            description="Entre com seus dados para acessar o painel administrativo."
+            description="Entre com seus dados para acessar sua conta."
         >
             <Head title="Entrar" />
 
@@ -238,6 +238,16 @@ export default function Login({
 
                     {processing ? 'Entrando...' : 'Entrar'}
                 </Button>
+
+                <p className="mt-2 text-center text-sm text-[var(--admin-text-muted)]">
+                    Ainda não tem uma conta?{' '}
+                    <TextLink
+                        href={route('register')}
+                        className="font-medium text-[var(--admin-primary)] no-underline hover:text-[var(--admin-primary-dark)] hover:underline"
+                    >
+                        Criar conta
+                    </TextLink>
+                </p>
             </form>
         </AuthLayout>
     );

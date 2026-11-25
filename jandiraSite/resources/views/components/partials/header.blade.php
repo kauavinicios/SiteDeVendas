@@ -45,14 +45,14 @@
             <div class="store-actions">
 
                 @auth
-                    <a href="{{ route('dashboard') }}" class="store-action">
+                    <a href="{{ auth()->user()->isStaff() ? route('dashboard') : route('account.index') }}" class="store-action">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2">
                             <path d="M20 21a8 8 0 0 0-16 0"></path>
                             <circle cx="12" cy="7" r="4"></circle>
                         </svg>
 
-                        <span>Minha conta</span>
+                        <span>{{ auth()->user()->isStaff() ? 'Painel Admin' : 'Minha conta' }}</span>
                     </a>
                 @else
                     <a href="{{ route('login') }}" class="store-action">

@@ -2,11 +2,13 @@
 
 use App\Enums\Permission;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductImageController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -85,5 +87,29 @@ Route::middleware(['auth', 'active', 'staff'])
             Route::patch('/estoque/{variant}', [StockController::class, 'update'])
                 ->middleware('can:'.Permission::ManageStock->value)
                 ->name('stock.update');
+
+            // /admin/usuarios — gestão da equipe (exclusivo do Administrador; sem exclusão)
+            Route::middleware('can:'.Permission::ManageUsers->value)->group(function () {
+                Route::get('/usuarios', [UserController::class, 'index'])
+                    ->name('users.index');
+
+                Route::post('/usuarios', [UserController::class, 'store'])
+                    ->name('users.store');
+
+                Route::put('/usuarios/{user}', [UserController::class, 'update'])
+                    ->name('users.update');
+
+                Route::patch('/usuarios/{user}/status', [UserController::class, 'toggleStatus'])
+                    ->name('users.toggle-status');
+            });
+
+            // /admin/clientes — consulta de clientes e inscritos em novidades (sem exclusão)
+            Route::get('/clientes', [CustomerController::class, 'index'])
+                ->middleware('can:'.Permission::ViewCustomers->value)
+                ->name('customers.index');
+
+            Route::patch('/clientes/{user}/status', [CustomerController::class, 'toggleStatus'])
+                ->middleware('can:'.Permission::ManageUsers->value)
+                ->name('customers.toggle-status');
         });
     });

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Shop\AccountController;
 use App\Http\Controllers\Shop\CartController;
 use App\Http\Controllers\Shop\HomeController;
 use App\Http\Controllers\Shop\ProductController;
@@ -34,6 +35,17 @@ Route::delete('/carrinho/{variant}', [CartController::class, 'destroy'])
 
 Route::delete('/carrinho', [CartController::class, 'clear'])
     ->name('cart.clear');
+
+Route::middleware(['auth', 'active'])->group(function () {
+    Route::get('/minha-conta', [AccountController::class, 'index'])
+        ->name('account.index');
+
+    Route::patch('/minha-conta/perfil', [AccountController::class, 'updateProfile'])
+        ->name('account.profile.update');
+
+    Route::put('/minha-conta/senha', [AccountController::class, 'updatePassword'])
+        ->name('account.password.update');
+});
 
 require __DIR__.'/admin.php';
 require __DIR__.'/settings.php';
