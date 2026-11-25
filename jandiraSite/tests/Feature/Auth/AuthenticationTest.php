@@ -10,16 +10,16 @@ class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_login_screen_can_be_rendered()
+    public function test_login_screen_can_be_rendered(): void
     {
         $response = $this->get('/login');
 
         $response->assertStatus(200);
     }
 
-    public function test_users_can_authenticate_using_the_login_screen()
+    public function test_staff_users_are_redirected_to_dashboard_after_login(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
 
         $response = $this->post('/login', [
             'email' => $user->email,
@@ -30,7 +30,33 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('dashboard', absolute: false));
     }
 
-    public function test_users_can_not_authenticate_with_invalid_password()
+    public function test_customers_are_redirected_to_home_after_login(): void
+    {
+        $user = User::factory()->customer()->create();
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('home', absolute: false));
+    }
+
+    public function test_inactive_users_cannot_authenticate(): void
+    {
+        $user = User::factory()->admin()->inactive()->create();
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertGuest();
+        $response->assertSessionHasErrors('email');
+    }
+
+    public function test_users_can_not_authenticate_with_invalid_password(): void
     {
         $user = User::factory()->create();
 
@@ -42,7 +68,7 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_users_can_logout()
+    public function test_users_can_logout(): void
     {
         $user = User::factory()->create();
 

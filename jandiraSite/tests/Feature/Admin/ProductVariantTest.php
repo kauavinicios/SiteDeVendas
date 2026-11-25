@@ -16,7 +16,7 @@ class ProductVariantTest extends TestCase
     {
         parent::setUp();
 
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->admin()->create());
     }
 
     public function test_store_creates_variant_with_trimmed_sku(): void

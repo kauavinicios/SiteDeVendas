@@ -21,15 +21,14 @@ interface RegisterForm {
 }
 
 export default function Register() {
-    const { data, setData, post, processing, errors, reset } =
-        useForm<RegisterForm>({
-            name: '',
-            email: '',
-            phone: '',
-            password: '',
-            password_confirmation: '',
-            marketing_opt_in: false,
-        });
+    const { data, setData, post, processing, errors, reset } = useForm<RegisterForm>({
+        name: '',
+        email: '',
+        phone: '',
+        password: '',
+        password_confirmation: '',
+        marketing_opt_in: false,
+    });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -40,18 +39,12 @@ export default function Register() {
     };
 
     return (
-        <AuthLayout
-            title="Criar conta"
-            description="Cadastre-se para acompanhar sua conta e receber novidades da loja."
-        >
+        <AuthLayout title="Criar conta" description="Cadastre-se para acompanhar sua conta e receber novidades da loja.">
             <Head title="Criar conta" />
 
             <form onSubmit={submit} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
-                    <Label
-                        htmlFor="name"
-                        className="text-sm font-medium text-[var(--admin-text-soft)]"
-                    >
+                    <Label htmlFor="name" className="text-sm font-medium text-[var(--admin-text-soft)]">
                         Nome completo
                     </Label>
 
@@ -78,10 +71,7 @@ export default function Register() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <Label
-                        htmlFor="email"
-                        className="text-sm font-medium text-[var(--admin-text-soft)]"
-                    >
+                    <Label htmlFor="email" className="text-sm font-medium text-[var(--admin-text-soft)]">
                         E-mail
                     </Label>
 
@@ -107,10 +97,7 @@ export default function Register() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <Label
-                        htmlFor="phone"
-                        className="text-sm font-medium text-[var(--admin-text-soft)]"
-                    >
+                    <Label htmlFor="phone" className="text-sm font-medium text-[var(--admin-text-soft)]">
                         Telefone / WhatsApp (opcional)
                     </Label>
 
@@ -135,10 +122,7 @@ export default function Register() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <Label
-                        htmlFor="password"
-                        className="text-sm font-medium text-[var(--admin-text-soft)]"
-                    >
+                    <Label htmlFor="password" className="text-sm font-medium text-[var(--admin-text-soft)]">
                         Senha
                     </Label>
 
@@ -154,9 +138,7 @@ export default function Register() {
                             required
                             autoComplete="new-password"
                             value={data.password}
-                            onChange={(e) =>
-                                setData('password', e.target.value)
-                            }
+                            onChange={(e) => setData('password', e.target.value)}
                             placeholder="Mínimo 8 caracteres"
                             className="h-11 rounded-xl border-[var(--admin-border)] bg-[var(--admin-background)] pl-10 text-[var(--admin-text)] placeholder:text-[var(--admin-text-muted)] focus-visible:border-[var(--admin-primary)] focus-visible:ring-[var(--admin-primary)]/15"
                         />
@@ -166,10 +148,7 @@ export default function Register() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <Label
-                        htmlFor="password_confirmation"
-                        className="text-sm font-medium text-[var(--admin-text-soft)]"
-                    >
+                    <Label htmlFor="password_confirmation" className="text-sm font-medium text-[var(--admin-text-soft)]">
                         Confirmar senha
                     </Label>
 
@@ -185,9 +164,7 @@ export default function Register() {
                             required
                             autoComplete="new-password"
                             value={data.password_confirmation}
-                            onChange={(e) =>
-                                setData('password_confirmation', e.target.value)
-                            }
+                            onChange={(e) => setData('password_confirmation', e.target.value)}
                             placeholder="Repita sua senha"
                             className="h-11 rounded-xl border-[var(--admin-border)] bg-[var(--admin-background)] pl-10 text-[var(--admin-text)] placeholder:text-[var(--admin-text-muted)] focus-visible:border-[var(--admin-primary)] focus-visible:ring-[var(--admin-primary)]/15"
                         />
@@ -204,19 +181,14 @@ export default function Register() {
                         id="marketing_opt_in"
                         name="marketing_opt_in"
                         checked={data.marketing_opt_in}
-                        onCheckedChange={(checked) =>
-                            setData('marketing_opt_in', checked === true)
-                        }
+                        onCheckedChange={(checked) => setData('marketing_opt_in', checked === true)}
                         className="mt-0.5 border-[var(--admin-border-hover)] data-[state=checked]:border-[var(--admin-primary)] data-[state=checked]:bg-[var(--admin-primary)]"
                     />
 
                     <span className="text-xs leading-relaxed text-[var(--admin-text-muted)]">
                         Quero receber novidades, lançamentos e promoções da{' '}
-                        <strong className="font-medium text-[var(--admin-text)]">
-                            Butique da Jandira
-                        </strong>{' '}
-                        por e-mail. Você pode cancelar quando quiser na sua
-                        conta.
+                        <strong className="font-medium text-[var(--admin-text)]">Butique da Jandira</strong> por e-mail. Você pode cancelar quando
+                        quiser na sua conta.
                     </span>
                 </label>
 
@@ -225,9 +197,7 @@ export default function Register() {
                     disabled={processing}
                     className="auth-primary-button mt-1 h-11 w-full rounded-xl font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                    {processing && (
-                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                    )}
+                    {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
 
                     {processing ? 'Criando conta...' : 'Criar conta'}
                 </Button>

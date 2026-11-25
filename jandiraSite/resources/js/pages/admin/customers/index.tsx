@@ -87,11 +87,7 @@ export default function CustomersIndex({ customers, stats, filters }: Props) {
         setSearch(filters.busca);
     }, [filters.busca]);
 
-    const applyFilters = (
-        nextSearch: string,
-        nextStatus: StatusFilter,
-        nextNewsletter: NewsletterFilter,
-    ) => {
+    const applyFilters = (nextSearch: string, nextStatus: StatusFilter, nextNewsletter: NewsletterFilter) => {
         const params: Record<string, string> = {};
         const trimmed = nextSearch.trim();
 
@@ -147,30 +143,17 @@ export default function CustomersIndex({ customers, stats, filters }: Props) {
 
             <main className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
                 <section>
-                    <h1 className="text-2xl font-semibold text-[var(--admin-text)]">
-                        Clientes
-                    </h1>
+                    <h1 className="text-2xl font-semibold text-[var(--admin-text)]">Clientes</h1>
 
                     <p className="mt-1 text-sm text-[var(--admin-text-muted)]">
-                        Consulte os clientes cadastrados na loja e acompanhe as
-                        inscrições para novidades por e-mail.
+                        Consulte os clientes cadastrados na loja e acompanhe as inscrições para novidades por e-mail.
                     </p>
                 </section>
 
                 <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <SummaryCard
-                        title="Clientes cadastrados"
-                        value={stats.total}
-                        description="Total de contas na loja"
-                        icon={Users}
-                    />
+                    <SummaryCard title="Clientes cadastrados" value={stats.total} description="Total de contas na loja" icon={Users} />
 
-                    <SummaryCard
-                        title="Ativos"
-                        value={stats.active}
-                        description="Contas habilitadas"
-                        icon={UserCheck}
-                    />
+                    <SummaryCard title="Ativos" value={stats.active} description="Contas habilitadas" icon={UserCheck} />
 
                     <SummaryCard
                         title="Inscritos em novidades"
@@ -178,15 +161,7 @@ export default function CustomersIndex({ customers, stats, filters }: Props) {
                         description="Aceitaram receber e-mails (LGPD)"
                         icon={MailCheck}
                         active={filters.novidades === 'inscritos'}
-                        onClick={() =>
-                            applyFilters(
-                                search,
-                                filters.status,
-                                filters.novidades === 'inscritos'
-                                    ? 'todos'
-                                    : 'inscritos',
-                            )
-                        }
+                        onClick={() => applyFilters(search, filters.status, filters.novidades === 'inscritos' ? 'todos' : 'inscritos')}
                     />
 
                     <SummaryCard
@@ -196,15 +171,7 @@ export default function CustomersIndex({ customers, stats, filters }: Props) {
                         icon={UserX}
                         tone="danger"
                         active={filters.status === 'inativos'}
-                        onClick={() =>
-                            applyFilters(
-                                search,
-                                filters.status === 'inativos'
-                                    ? 'todos'
-                                    : 'inativos',
-                                filters.novidades,
-                            )
-                        }
+                        onClick={() => applyFilters(search, filters.status === 'inativos' ? 'todos' : 'inativos', filters.novidades)}
                     />
                 </section>
 
@@ -215,17 +182,12 @@ export default function CustomersIndex({ customers, stats, filters }: Props) {
                 )}
 
                 {flash?.error && (
-                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                        {flash.error}
-                    </div>
+                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{flash.error}</div>
                 )}
 
                 <section className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] shadow-sm">
                     <div className="flex flex-col gap-4 border-b border-[var(--admin-border)] p-4 lg:flex-row lg:items-center lg:justify-between lg:p-5">
-                        <form
-                            onSubmit={handleSearchSubmit}
-                            className="flex w-full max-w-md items-center gap-2"
-                        >
+                        <form onSubmit={handleSearchSubmit} className="flex w-full max-w-md items-center gap-2">
                             <div className="relative flex-1">
                                 <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[var(--admin-text-muted)]" />
 
@@ -251,41 +213,22 @@ export default function CustomersIndex({ customers, stats, filters }: Props) {
                             <select
                                 aria-label="Filtrar por inscrição de novidades"
                                 value={filters.novidades}
-                                onChange={(e) =>
-                                    applyFilters(
-                                        search,
-                                        filters.status,
-                                        e.target.value as NewsletterFilter,
-                                    )
-                                }
+                                onChange={(e) => applyFilters(search, filters.status, e.target.value as NewsletterFilter)}
                                 className="h-9 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-background)] px-3 text-xs font-medium text-[var(--admin-text)] outline-none focus:border-[var(--admin-primary)]"
                             >
-                                <option value="todos">
-                                    Novidades: Todos
-                                </option>
-                                <option value="inscritos">
-                                    Inscritos (e-mail)
-                                </option>
-                                <option value="nao-inscritos">
-                                    Não inscritos
-                                </option>
+                                <option value="todos">Novidades: Todos</option>
+                                <option value="inscritos">Inscritos (e-mail)</option>
+                                <option value="nao-inscritos">Não inscritos</option>
                             </select>
 
                             {statusOptions.map((option) => {
-                                const selected =
-                                    filters.status === option.value;
+                                const selected = filters.status === option.value;
 
                                 return (
                                     <button
                                         key={option.value}
                                         type="button"
-                                        onClick={() =>
-                                            applyFilters(
-                                                search,
-                                                option.value,
-                                                filters.novidades,
-                                            )
-                                        }
+                                        onClick={() => applyFilters(search, option.value, filters.novidades)}
                                         className={`h-9 rounded-xl border px-3 text-xs font-medium transition-colors ${
                                             selected
                                                 ? 'border-[var(--admin-primary)] bg-[var(--admin-background-soft)] text-[var(--admin-primary)]'
@@ -305,16 +248,10 @@ export default function CustomersIndex({ customers, stats, filters }: Props) {
                                 <tr className="border-b border-[var(--admin-border)]">
                                     <TableHeader>Cliente</TableHeader>
                                     <TableHeader>Telefone</TableHeader>
-                                    <TableHeader>
-                                        Novidades por e-mail
-                                    </TableHeader>
+                                    <TableHeader>Novidades por e-mail</TableHeader>
                                     <TableHeader>Cadastro</TableHeader>
                                     <TableHeader>Status</TableHeader>
-                                    {canManageUsers && (
-                                        <TableHeader className="text-right">
-                                            Ações
-                                        </TableHeader>
-                                    )}
+                                    {canManageUsers && <TableHeader className="text-right">Ações</TableHeader>}
                                 </tr>
                             </thead>
 
@@ -327,19 +264,13 @@ export default function CustomersIndex({ customers, stats, filters }: Props) {
                                         >
                                             <TableCell>
                                                 <div className="min-w-0">
-                                                    <p className="truncate font-medium text-[var(--admin-text)]">
-                                                        {customer.name}
-                                                    </p>
+                                                    <p className="truncate font-medium text-[var(--admin-text)]">{customer.name}</p>
 
-                                                    <p className="mt-1 truncate text-xs text-[var(--admin-text-muted)]">
-                                                        {customer.email}
-                                                    </p>
+                                                    <p className="mt-1 truncate text-xs text-[var(--admin-text-muted)]">{customer.email}</p>
                                                 </div>
                                             </TableCell>
 
-                                            <TableCell>
-                                                {customer.phone ?? '—'}
-                                            </TableCell>
+                                            <TableCell>{customer.phone ?? '—'}</TableCell>
 
                                             <TableCell>
                                                 {customer.marketing_opt_in ? (
@@ -349,10 +280,7 @@ export default function CustomersIndex({ customers, stats, filters }: Props) {
                                                         </span>
                                                         {customer.marketing_opt_in_at && (
                                                             <p className="mt-1 text-[11px] text-[var(--admin-text-muted)]">
-                                                                Aceite:{' '}
-                                                                {
-                                                                    customer.marketing_opt_in_at
-                                                                }
+                                                                Aceite: {customer.marketing_opt_in_at}
                                                             </p>
                                                         )}
                                                     </div>
@@ -363,44 +291,25 @@ export default function CustomersIndex({ customers, stats, filters }: Props) {
                                                 )}
                                             </TableCell>
 
-                                            <TableCell>
-                                                {customer.created_at ?? '—'}
-                                            </TableCell>
+                                            <TableCell>{customer.created_at ?? '—'}</TableCell>
 
                                             <TableCell>
-                                                <StatusBadge
-                                                    active={customer.active}
-                                                />
+                                                <StatusBadge active={customer.active} />
                                             </TableCell>
 
                                             {canManageUsers && (
                                                 <TableCell className="text-right">
                                                     <button
                                                         type="button"
-                                                        onClick={() =>
-                                                            handleToggleStatus(
-                                                                customer,
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            togglingId ===
-                                                            customer.id
-                                                        }
+                                                        onClick={() => handleToggleStatus(customer)}
+                                                        disabled={togglingId === customer.id}
                                                         className={`inline-flex size-9 items-center justify-center rounded-lg text-[var(--admin-text-muted)] transition-colors disabled:opacity-40 ${
                                                             customer.active
                                                                 ? 'hover:bg-amber-50 hover:text-amber-700'
                                                                 : 'hover:bg-green-50 hover:text-green-700'
                                                         }`}
-                                                        aria-label={
-                                                            customer.active
-                                                                ? `Desativar ${customer.name}`
-                                                                : `Ativar ${customer.name}`
-                                                        }
-                                                        title={
-                                                            customer.active
-                                                                ? 'Desativar cliente'
-                                                                : 'Ativar cliente'
-                                                        }
+                                                        aria-label={customer.active ? `Desativar ${customer.name}` : `Ativar ${customer.name}`}
+                                                        title={customer.active ? 'Desativar cliente' : 'Ativar cliente'}
                                                     >
                                                         <Power className="size-4" />
                                                     </button>
@@ -410,13 +319,9 @@ export default function CustomersIndex({ customers, stats, filters }: Props) {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td
-                                            colSpan={canManageUsers ? 6 : 5}
-                                            className="px-4 py-12 text-center"
-                                        >
+                                        <td colSpan={canManageUsers ? 6 : 5} className="px-4 py-12 text-center">
                                             <p className="text-sm text-[var(--admin-text-muted)]">
-                                                Nenhum cliente encontrado para
-                                                os filtros selecionados.
+                                                Nenhum cliente encontrado para os filtros selecionados.
                                             </p>
                                         </td>
                                     </tr>
@@ -428,19 +333,12 @@ export default function CustomersIndex({ customers, stats, filters }: Props) {
                     {customers.last_page > 1 && (
                         <div className="flex flex-col items-center justify-between gap-3 border-t border-[var(--admin-border)] px-4 py-4 sm:flex-row md:px-5">
                             <p className="text-xs text-[var(--admin-text-muted)]">
-                                Mostrando {customers.from ?? 0} a{' '}
-                                {customers.to ?? 0} de {customers.total}{' '}
-                                clientes
+                                Mostrando {customers.from ?? 0} a {customers.to ?? 0} de {customers.total} clientes
                             </p>
 
-                            <nav
-                                aria-label="Paginação de clientes"
-                                className="flex flex-wrap items-center gap-1"
-                            >
+                            <nav aria-label="Paginação de clientes" className="flex flex-wrap items-center gap-1">
                                 {customers.links.map((link, index) => {
-                                    const label = formatPaginationLabel(
-                                        link.label,
-                                    );
+                                    const label = formatPaginationLabel(link.label);
 
                                     if (!link.url) {
                                         return (
@@ -495,34 +393,23 @@ function SummaryCard({
     active?: boolean;
     onClick?: () => void;
 }) {
-    const iconTone =
-        tone === 'danger'
-            ? 'bg-red-50 text-red-600'
-            : 'bg-[var(--admin-background-soft)] text-[var(--admin-primary)]';
+    const iconTone = tone === 'danger' ? 'bg-red-50 text-red-600' : 'bg-[var(--admin-background-soft)] text-[var(--admin-primary)]';
 
     const content = (
         <>
             <div className="flex items-start justify-between gap-4">
                 <div>
-                    <p className="text-sm font-medium text-[var(--admin-text-muted)]">
-                        {title}
-                    </p>
+                    <p className="text-sm font-medium text-[var(--admin-text-muted)]">{title}</p>
 
-                    <p className="mt-2 text-2xl font-semibold text-[var(--admin-text)]">
-                        {value}
-                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-[var(--admin-text)]">{value}</p>
                 </div>
 
-                <div
-                    className={`flex size-10 items-center justify-center rounded-xl ${iconTone}`}
-                >
+                <div className={`flex size-10 items-center justify-center rounded-xl ${iconTone}`}>
                     <Icon className="size-5" aria-hidden="true" />
                 </div>
             </div>
 
-            <p className="mt-3 text-xs text-[var(--admin-text-muted)]">
-                {description}
-            </p>
+            <p className="mt-3 text-xs text-[var(--admin-text-muted)]">{description}</p>
         </>
     );
 
@@ -542,57 +429,29 @@ function SummaryCard({
         );
     }
 
-    return (
-        <article className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] p-5 shadow-sm">
-            {content}
-        </article>
-    );
+    return <article className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] p-5 shadow-sm">{content}</article>;
 }
 
 function StatusBadge({ active }: { active: boolean }) {
     return (
         <span
-            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                active
-                    ? 'bg-green-50 text-green-700'
-                    : 'bg-red-50 text-red-700'
-            }`}
+            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}
         >
             {active ? 'Ativo' : 'Inativo'}
         </span>
     );
 }
 
-function TableHeader({
-    children,
-    className = '',
-}: {
-    children: React.ReactNode;
-    className?: string;
-}) {
+function TableHeader({ children, className = '' }: { children: React.ReactNode; className?: string }) {
     return (
-        <th
-            className={`px-4 py-3 text-left text-xs font-semibold tracking-wide text-[var(--admin-text-muted)] uppercase ${className}`}
-        >
+        <th className={`px-4 py-3 text-left text-xs font-semibold tracking-wide text-[var(--admin-text-muted)] uppercase ${className}`}>
             {children}
         </th>
     );
 }
 
-function TableCell({
-    children,
-    className = '',
-}: {
-    children: React.ReactNode;
-    className?: string;
-}) {
-    return (
-        <td
-            className={`px-4 py-4 text-sm text-[var(--admin-text-muted)] ${className}`}
-        >
-            {children}
-        </td>
-    );
+function TableCell({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+    return <td className={`px-4 py-4 text-sm text-[var(--admin-text-muted)] ${className}`}>{children}</td>;
 }
 
 function formatPaginationLabel(raw: string): string {

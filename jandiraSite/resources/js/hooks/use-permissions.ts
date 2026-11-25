@@ -7,8 +7,7 @@ export function usePermissions() {
     const role = auth?.user?.role;
     const roleLabel = auth?.user?.role_label;
 
-    const can = (permission: string): boolean =>
-        permissions.includes(permission);
+    const can = (permission: string): boolean => permissions.includes(permission);
 
     return {
         permissions,

@@ -32,7 +32,7 @@ class ProductTest extends TestCase
     public function test_admin_pages_render(): void
     {
         $product = Product::factory()->create();
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->admin()->create());
 
         $this->get(route('admin.products.index'))->assertOk();
         $this->get(route('admin.products.create'))->assertOk();
@@ -41,7 +41,7 @@ class ProductTest extends TestCase
 
     public function test_store_creates_product_with_unique_slug(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->admin()->create());
 
         $this->post(route('admin.products.store'), $this->payload())
             ->assertRedirect(route('admin.products.index'))
@@ -55,7 +55,7 @@ class ProductTest extends TestCase
 
     public function test_update_keeps_own_slug_when_name_is_unchanged(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->admin()->create());
 
         $product = Product::factory()->create(['name' => 'Fronha Lisa', 'slug' => 'fronha-lisa']);
 
@@ -71,7 +71,7 @@ class ProductTest extends TestCase
 
     public function test_store_validates_required_fields(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->admin()->create());
 
         $this->post(route('admin.products.store'), [])
             ->assertSessionHasErrors(['name', 'category_id', 'active', 'featured']);

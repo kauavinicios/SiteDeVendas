@@ -1,25 +1,10 @@
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
-import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-} from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { usePermissions } from '@/hooks/use-permissions';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import {
-    Boxes,
-    LayoutDashboard,
-    Package,
-    ShieldCheck,
-    Tags,
-    Users,
-} from 'lucide-react';
+import { Boxes, LayoutDashboard, Package, ShieldCheck, Tags, Users } from 'lucide-react';
 
 import AppLogo from './app-logo';
 
@@ -69,27 +54,14 @@ const mainNavItems: ProtectedNavItem[] = [
 export function AppSidebar() {
     const { can, roleLabel } = usePermissions();
 
-    const visibleItems: NavItem[] = mainNavItems
-        .filter((item) => can(item.permission))
-        .map(({ title, url, icon }) => ({ title, url, icon }));
+    const visibleItems: NavItem[] = mainNavItems.filter((item) => can(item.permission)).map(({ title, url, icon }) => ({ title, url, icon }));
 
     return (
-        <Sidebar
-            collapsible="icon"
-            variant="inset"
-            className="border-r border-[var(--admin-border)]"
-        >
+        <Sidebar collapsible="icon" variant="inset" className="border-r border-[var(--admin-border)]">
             <SidebarHeader className="px-2 py-3">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton
-                            size="lg"
-                            asChild
-                            className="
-                                rounded-xl
-                                hover:bg-[var(--admin-background-soft)]
-                            "
-                        >
+                        <SidebarMenuButton size="lg" asChild className="rounded-xl hover:bg-[var(--admin-background-soft)]">
                             <Link href="/admin/dashboard" prefetch>
                                 <AppLogo />
                             </Link>

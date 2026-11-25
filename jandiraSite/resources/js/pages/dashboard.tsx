@@ -88,7 +88,9 @@ export default function Dashboard({ stats, recentProducts }: DashboardProps) {
                                                     {product.name}
                                                 </p>
 
-                                                <p className="mt-1 text-xs text-[var(--admin-text-muted)]">{product.category?.name ?? 'Sem categoria'}</p>
+                                                <p className="mt-1 text-xs text-[var(--admin-text-muted)]">
+                                                    {product.category?.name ?? 'Sem categoria'}
+                                                </p>
                                             </div>
 
                                             <div className="shrink-0 text-right">
@@ -112,10 +114,7 @@ export default function Dashboard({ stats, recentProducts }: DashboardProps) {
                                     }
 
                                     return (
-                                        <div
-                                            key={product.id}
-                                            className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
-                                        >
+                                        <div key={product.id} className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
                                             {rowBody}
                                         </div>
                                     );
@@ -159,7 +158,9 @@ export default function Dashboard({ stats, recentProducts }: DashboardProps) {
                                     href="/admin/categorias"
                                     icon={Tags}
                                     title={can('manage-categories') ? 'Gerenciar categorias' : 'Consultar categorias'}
-                                    description={can('manage-categories') ? 'Organize departamentos e subcategorias.' : 'Veja os departamentos da loja.'}
+                                    description={
+                                        can('manage-categories') ? 'Organize departamentos e subcategorias.' : 'Veja os departamentos da loja.'
+                                    }
                                 />
                             )}
 
@@ -168,7 +169,9 @@ export default function Dashboard({ stats, recentProducts }: DashboardProps) {
                                     href="/admin/estoque"
                                     icon={Boxes}
                                     title={can('manage-stock') ? 'Controlar estoque' : 'Consultar estoque'}
-                                    description={can('manage-stock') ? 'Ajuste quantidades e acompanhe alertas.' : 'Acompanhe a disponibilidade dos itens.'}
+                                    description={
+                                        can('manage-stock') ? 'Ajuste quantidades e acompanhe alertas.' : 'Acompanhe a disponibilidade dos itens.'
+                                    }
                                 />
                             )}
 

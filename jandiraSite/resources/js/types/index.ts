@@ -1,11 +1,6 @@
 import { LucideIcon } from 'lucide-react';
 
-export type UserRole =
-    | 'admin'
-    | 'manager'
-    | 'storekeeper'
-    | 'support'
-    | 'customer';
+export type UserRole = 'admin' | 'manager' | 'storekeeper' | 'support' | 'customer';
 
 export interface Auth {
     user: User | null;

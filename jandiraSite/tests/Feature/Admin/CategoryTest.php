@@ -16,7 +16,7 @@ class CategoryTest extends TestCase
     {
         parent::setUp();
 
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->admin()->create());
     }
 
     public function test_index_renders(): void

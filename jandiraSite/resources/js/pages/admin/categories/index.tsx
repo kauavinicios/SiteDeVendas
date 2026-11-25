@@ -1,13 +1,6 @@
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { usePermissions } from '@/hooks/use-permissions';
@@ -60,16 +53,7 @@ export default function CategoriesIndex({ categories }: Props) {
     const [open, setOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
-    const {
-        data,
-        setData,
-        post,
-        put,
-        processing,
-        errors,
-        reset,
-        clearErrors,
-    } = useForm<CategoryFormData>({
+    const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm<CategoryFormData>({
         name: '',
         slug: '',
         parent_id: '',
@@ -105,11 +89,7 @@ export default function CategoriesIndex({ categories }: Props) {
     };
 
     const handleDelete = (category: Category) => {
-        if (
-            confirm(
-                `Deseja realmente excluir a categoria "${category.name}"? Esta ação não pode ser desfeita.`,
-            )
-        ) {
+        if (confirm(`Deseja realmente excluir a categoria "${category.name}"? Esta ação não pode ser desfeita.`)) {
             router.delete(route('admin.categories.destroy', category.id), {
                 preserveScroll: true,
             });
@@ -133,9 +113,7 @@ export default function CategoriesIndex({ categories }: Props) {
     };
 
     // Filtra para não permitir selecionar a própria categoria como pai na edição
-    const availableParents = categories.filter(
-        (c) => !editingCategory || c.id !== editingCategory.id,
-    );
+    const availableParents = categories.filter((c) => !editingCategory || c.id !== editingCategory.id);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -144,9 +122,7 @@ export default function CategoriesIndex({ categories }: Props) {
             <main className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
                 <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-semibold text-[var(--admin-text)]">
-                            Categorias
-                        </h1>
+                        <h1 className="text-2xl font-semibold text-[var(--admin-text)]">Categorias</h1>
                         <p className="mt-1 text-sm text-[var(--admin-text-muted)]">
                             Gerencie as categorias e departamentos para organizar os produtos.
                         </p>
@@ -156,19 +132,7 @@ export default function CategoriesIndex({ categories }: Props) {
                         <button
                             type="button"
                             onClick={openCreateModal}
-                            className="
-                                auth-primary-button
-                                inline-flex
-                                h-10
-                                items-center
-                                justify-center
-                                gap-2
-                                rounded-xl
-                                px-4
-                                text-sm
-                                font-semibold
-                                text-white
-                            "
+                            className="auth-primary-button inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white"
                         >
                             <Plus className="size-4" />
                             Nova categoria
@@ -183,9 +147,7 @@ export default function CategoriesIndex({ categories }: Props) {
                 )}
 
                 {flash?.error && (
-                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                        {flash.error}
-                    </div>
+                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{flash.error}</div>
                 )}
 
                 <section className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] shadow-sm">
@@ -204,10 +166,7 @@ export default function CategoriesIndex({ categories }: Props) {
                             <tbody className="divide-y divide-[var(--admin-border)]">
                                 {categories.length > 0 ? (
                                     categories.map((category) => (
-                                        <tr
-                                            key={category.id}
-                                            className="transition-colors hover:bg-[var(--admin-background-soft)]/50"
-                                        >
+                                        <tr key={category.id} className="transition-colors hover:bg-[var(--admin-background-soft)]/50">
                                             <TableCell className="font-medium text-[var(--admin-text)]">
                                                 <div className="flex items-center gap-2">
                                                     <FolderTree className="size-4 text-[var(--admin-text-muted)]" />
@@ -223,22 +182,15 @@ export default function CategoriesIndex({ categories }: Props) {
 
                                             <TableCell>
                                                 {category.parent ? (
-                                                    <span className="text-sm text-[var(--admin-text)]">
-                                                        {category.parent.name}
-                                                    </span>
+                                                    <span className="text-sm text-[var(--admin-text)]">{category.parent.name}</span>
                                                 ) : (
-                                                    <span className="text-xs text-[var(--admin-text-muted)] italic">
-                                                        Principal (sem pai)
-                                                    </span>
+                                                    <span className="text-xs text-[var(--admin-text-muted)] italic">Principal (sem pai)</span>
                                                 )}
                                             </TableCell>
 
                                             <TableCell>
                                                 <span className="inline-flex rounded-full bg-[var(--admin-background-soft)] px-2.5 py-0.5 text-xs font-medium text-[var(--admin-text)]">
-                                                    {category.products_count}{' '}
-                                                    {category.products_count === 1
-                                                        ? 'produto'
-                                                        : 'produtos'}
+                                                    {category.products_count} {category.products_count === 1 ? 'produto' : 'produtos'}
                                                 </span>
                                             </TableCell>
 
@@ -274,9 +226,7 @@ export default function CategoriesIndex({ categories }: Props) {
                                 ) : (
                                     <tr>
                                         <td colSpan={showActions ? 5 : 4} className="px-4 py-12 text-center">
-                                            <p className="text-sm text-[var(--admin-text-muted)]">
-                                                Nenhuma categoria cadastrada.
-                                            </p>
+                                            <p className="text-sm text-[var(--admin-text-muted)]">Nenhuma categoria cadastrada.</p>
                                         </td>
                                     </tr>
                                 )}
@@ -294,18 +244,13 @@ export default function CategoriesIndex({ categories }: Props) {
                                 {editingCategory ? 'Editar categoria' : 'Nova categoria'}
                             </DialogTitle>
                             <DialogDescription className="text-sm text-[var(--admin-text-muted)]">
-                                {editingCategory
-                                    ? 'Atualize as informações da categoria.'
-                                    : 'Preencha os dados para criar uma nova categoria.'}
+                                {editingCategory ? 'Atualize as informações da categoria.' : 'Preencha os dados para criar uma nova categoria.'}
                             </DialogDescription>
                         </DialogHeader>
 
                         <form onSubmit={submit} className="mt-4 space-y-4">
                             <div className="space-y-2">
-                                <Label
-                                    htmlFor="cat-name"
-                                    className="text-sm font-medium text-[var(--admin-text)]"
-                                >
+                                <Label htmlFor="cat-name" className="text-sm font-medium text-[var(--admin-text)]">
                                     Nome da categoria *
                                 </Label>
                                 <Input
@@ -319,10 +264,7 @@ export default function CategoriesIndex({ categories }: Props) {
                             </div>
 
                             <div className="space-y-2">
-                                <Label
-                                    htmlFor="cat-slug"
-                                    className="text-sm font-medium text-[var(--admin-text)]"
-                                >
+                                <Label htmlFor="cat-slug" className="text-sm font-medium text-[var(--admin-text)]">
                                     Slug (URL amigável)
                                 </Label>
                                 <Input
@@ -336,10 +278,7 @@ export default function CategoriesIndex({ categories }: Props) {
                             </div>
 
                             <div className="space-y-2">
-                                <Label
-                                    htmlFor="cat-parent"
-                                    className="text-sm font-medium text-[var(--admin-text)]"
-                                >
+                                <Label htmlFor="cat-parent" className="text-sm font-medium text-[var(--admin-text)]">
                                     Categoria Pai (Opcional)
                                 </Label>
                                 <select
@@ -358,7 +297,7 @@ export default function CategoriesIndex({ categories }: Props) {
                                 <InputError message={errors.parent_id} />
                             </div>
 
-                            <DialogFooter className="gap-2 sm:gap-2 pt-2">
+                            <DialogFooter className="gap-2 pt-2 sm:gap-2">
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -369,16 +308,8 @@ export default function CategoriesIndex({ categories }: Props) {
                                     Cancelar
                                 </Button>
 
-                                <Button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="auth-primary-button rounded-xl text-white"
-                                >
-                                    {processing
-                                        ? 'Salvando...'
-                                        : editingCategory
-                                          ? 'Salvar alterações'
-                                          : 'Criar categoria'}
+                                <Button type="submit" disabled={processing} className="auth-primary-button rounded-xl text-white">
+                                    {processing ? 'Salvando...' : editingCategory ? 'Salvar alterações' : 'Criar categoria'}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -389,33 +320,14 @@ export default function CategoriesIndex({ categories }: Props) {
     );
 }
 
-function TableHeader({
-    children,
-    className = '',
-}: {
-    children: React.ReactNode;
-    className?: string;
-}) {
+function TableHeader({ children, className = '' }: { children: React.ReactNode; className?: string }) {
     return (
-        <th
-            className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--admin-text-muted)] ${className}`}
-        >
+        <th className={`px-4 py-3 text-left text-xs font-semibold tracking-wide text-[var(--admin-text-muted)] uppercase ${className}`}>
             {children}
         </th>
     );
 }
 
-function TableCell({
-    children,
-    className = '',
-}: {
-    children: React.ReactNode;
-    className?: string;
-}) {
-    return (
-        <td className={`px-4 py-4 text-sm text-[var(--admin-text-muted)] ${className}`}>
-            {children}
-        </td>
-    );
+function TableCell({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+    return <td className={`px-4 py-4 text-sm text-[var(--admin-text-muted)] ${className}`}>{children}</td>;
 }
-
