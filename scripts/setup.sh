@@ -26,7 +26,7 @@ APP_DIR="$(cd "$SCRIPT_DIR/../jandiraSite" && pwd)"
 ENV_FILE="$APP_DIR/.env"
 
 DEV_DB_CONTAINER="${DEV_DB_CONTAINER:-postgres}"
-DEV_DB_IMAGE="postgres:15.4-alpine"
+DEV_DB_IMAGE="postgres:18-alpine"
 
 # shellcheck source=scripts/lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
@@ -89,7 +89,7 @@ else
             --name "$DEV_DB_CONTAINER" \
             --restart unless-stopped \
             -p "127.0.0.1:${DB_PORT}:5432" \
-            -v "$APP_DIR/docker/postgresql/data:/var/lib/postgresql/data" \
+            -v "$APP_DIR/docker/postgresql/data:/var/lib/postgresql" \
             -e POSTGRES_USER="$DB_USERNAME" \
             -e POSTGRES_PASSWORD="$DB_PASSWORD" \
             -e POSTGRES_DB="$DB_DATABASE" \

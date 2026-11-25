@@ -32,7 +32,7 @@ source "$SCRIPT_DIR/lib/common.sh"
 
 # Devem bater com o <php><env> do jandiraSite/phpunit.xml e com o tests.yml
 CONTAINER="jandira-db-test"
-IMAGE="postgres:15.4-alpine"
+IMAGE="postgres:18-alpine"
 DB_PORT="${TEST_DB_PORT:-5433}"
 DB_USER="jandira"
 DB_PASS="jandira_test"
@@ -70,7 +70,7 @@ db_up() {
         docker run -d --rm \
             --name "$CONTAINER" \
             -p "127.0.0.1:${DB_PORT}:5432" \
-            --tmpfs /var/lib/postgresql/data \
+            --tmpfs /var/lib/postgresql \
             -e POSTGRES_USER="$DB_USER" \
             -e POSTGRES_PASSWORD="$DB_PASS" \
             -e POSTGRES_DB="$DB_HOMOLOG" \
