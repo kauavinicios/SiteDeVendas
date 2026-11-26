@@ -39,4 +39,15 @@ return [
         'number' => env('WHATSAPP_NUMBER'),
     ],
 
+    'infinitepay' => [
+        'driver' => env('INFINITEPAY_DRIVER', 'mock'),
+        'base_url' => rtrim((string) env('INFINITEPAY_BASE_URL', 'https://api.checkout.infinitepay.io'), '/'),
+        'handle' => ltrim(trim((string) env('INFINITEPAY_HANDLE', '')), '$'),
+        'api_key' => env('INFINITEPAY_API_KEY'),
+        'webhook_secret' => env('INFINITEPAY_WEBHOOK_SECRET'),
+        'timeout' => (int) env('INFINITEPAY_TIMEOUT', 15),
+        'single_payment' => filter_var(env('INFINITEPAY_SINGLE_PAYMENT', true), FILTER_VALIDATE_BOOL),
+        'require_delivery_address' => filter_var(env('INFINITEPAY_REQUIRE_DELIVERY_ADDRESS', false), FILTER_VALIDATE_BOOL),
+    ],
+
 ];
