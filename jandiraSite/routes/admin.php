@@ -4,6 +4,7 @@ use App\Enums\Permission;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\CampaignController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
@@ -114,6 +115,15 @@ Route::middleware(['auth', 'active', 'staff'])
             Route::patch('/clientes/{user}/status', [CustomerController::class, 'toggleStatus'])
                 ->middleware('can:'.Permission::ManageUsers->value)
                 ->name('customers.toggle-status');
+
+            // /admin/mensagens — caixa de entrada do formulário de contato (sem exclusão)
+            Route::middleware('can:'.Permission::ViewMessages->value)->group(function () {
+                Route::get('/mensagens', [ContactMessageController::class, 'index'])
+                    ->name('messages.index');
+
+                Route::patch('/mensagens/{message}/leitura', [ContactMessageController::class, 'toggleRead'])
+                    ->name('messages.toggle-read');
+            });
 
             // /admin/novidades — campanhas de marketing por e-mail (LGPD)
             Route::middleware('can:'.Permission::ManageCampaigns->value)->group(function () {

@@ -13,6 +13,7 @@ enum Permission: string
     case ViewStock = 'view-stock';
     case ManageStock = 'manage-stock';
     case ViewCustomers = 'view-customers';
+    case ViewMessages = 'view-messages';
     case ManageCampaigns = 'manage-campaigns';
     case ViewOrders = 'view-orders';
     case ManageOrders = 'manage-orders';

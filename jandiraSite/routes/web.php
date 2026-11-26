@@ -2,13 +2,16 @@
 
 use App\Http\Controllers\Shop\AccountController;
 use App\Http\Controllers\Shop\CartController;
+use App\Http\Controllers\Shop\ContactController;
 use App\Http\Controllers\Shop\FavoriteController;
 use App\Http\Controllers\Shop\HomeController;
 use App\Http\Controllers\Shop\LegalController;
 use App\Http\Controllers\Shop\NewsletterController;
 use App\Http\Controllers\Shop\OrderController;
+use App\Http\Controllers\Shop\PageController;
 use App\Http\Controllers\Shop\ProductController;
 use App\Http\Controllers\Shop\StockAlertController;
+use App\Models\ContactMessage;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,6 +28,16 @@ Route::get('/produtos', [ProductController::class, 'index'])
 
 Route::get('/produtos/{product:slug}', [ProductController::class, 'show'])
     ->name('products.show');
+
+Route::get('/sobre', [PageController::class, 'about'])
+    ->name('pages.about');
+
+Route::get('/contato', [ContactController::class, 'index'])
+    ->name('contact.index');
+
+Route::post('/contato', [ContactController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('contact.store');
 
 Route::get('/termos-de-uso', [LegalController::class, 'terms'])
     ->name('legal.terms');
@@ -99,6 +112,23 @@ if (app()->isLocal()) {
                 'actionText' => 'Confirmar meu e-mail',
                 'actionUrl' => $url,
                 'expireMinutes' => 60,
+            ]);
+        });
+
+        Route::get('/contact-message', function () {
+            $sample = new ContactMessage([
+                'name' => 'Maria Silva',
+                'email' => 'maria@exemplo.com',
+                'phone' => '(67) 99999-9999',
+                'subject' => 'Dúvida sobre jogo de cama casal',
+                'message' => "Olá! Gostaria de saber se o jogo de cama em algodão 200 fios está disponível na cor rosê para entrega em Campo Grande.",
+            ]);
+            $sample->created_at = now();
+
+            return view('emails.contact-message', [
+                'contactMessage' => $sample,
+                'actionText' => 'Abrir caixa de mensagens',
+                'actionUrl' => url('/admin/mensagens'),
             ]);
         });
     });

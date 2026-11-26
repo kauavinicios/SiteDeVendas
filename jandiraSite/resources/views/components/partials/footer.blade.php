@@ -49,6 +49,14 @@
                         Perfumaria
                     </a>
 
+                    <a href="{{ route('pages.about') }}">
+                        Sobre
+                    </a>
+
+                    <a href="{{ route('contact.index') }}">
+                        Contato
+                    </a>
+
                     <a href="{{ route('legal.terms') }}">
                         Termos de Uso
                     </a>
@@ -79,6 +87,10 @@
                         $footerWhatsappNumber = preg_replace('/\D+/', '', (string) config('services.whatsapp.number'));
                         $footerWhatsappMessage = rawurlencode('Olá! Vim pelo site da Butique da Jandira e gostaria de atendimento.');
                     @endphp
+
+                    <a href="{{ route('contact.index') }}">
+                        Formulário de contato
+                    </a>
 
                     @if ($footerWhatsappNumber !== '')
                         <a href="https://wa.me/{{ $footerWhatsappNumber }}?text={{ $footerWhatsappMessage }}" target="_blank" rel="noopener noreferrer">

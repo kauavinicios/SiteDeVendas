@@ -92,25 +92,31 @@
     {{-- Navegação desktop --}}
     <nav class="store-navigation">
         <div class="store-container">
+            @php
+                $activeCategories = (array) request('categorias', []);
+            @endphp
+
             <div class="store-nav-links">
 
                 <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">
                     Início
                 </a>
 
-                <a href="{{ route('products.index', ['categorias' => 'casa']) }}" class="{{ request('categoria') === 'casa' ? 'active' : '' }}">
+                <a href="{{ route('products.index', ['categorias' => ['casa']]) }}"
+                    class="{{ request()->routeIs('products.index') && in_array('casa', $activeCategories, true) ? 'active' : '' }}">
                     Cama
                 </a>
-                
-                <a href="{{ route('products.index', ['categorias' => 'perfumaria']) }}" class="{{ request('categoria') === 'perfumaria' ? 'active' : '' }}">
+
+                <a href="{{ route('products.index', ['categorias' => ['perfumaria']]) }}"
+                    class="{{ request()->routeIs('products.index') && in_array('perfumaria', $activeCategories, true) ? 'active' : '' }}">
                     Perfumaria
                 </a>
 
-                <a href="#">
+                <a href="{{ route('pages.about') }}" class="{{ request()->routeIs('pages.about') ? 'active' : '' }}">
                     Sobre
                 </a>
 
-                <a href="#">
+                <a href="{{ route('contact.index') }}" class="{{ request()->routeIs('contact.index') ? 'active' : '' }}">
                     Contato
                 </a>
 
