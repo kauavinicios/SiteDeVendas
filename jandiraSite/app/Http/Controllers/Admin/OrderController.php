@@ -6,7 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\ProductVariant;
+use App\Services\OrderPaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -101,7 +101,7 @@ class OrderController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, Order $order): RedirectResponse
+    public function updateStatus(Request $request, Order $order, OrderPaymentService $orderPaymentService): RedirectResponse
     {
         $validated = $request->validate([
             'status' => ['required', 'string', Rule::in(OrderStatus::values())],
@@ -117,7 +117,7 @@ class OrderController extends Controller
         $nextStatus = OrderStatus::from($validated['status']);
 
         try {
-            DB::transaction(function () use ($order, $nextStatus, $validated): void {
+            DB::transaction(function () use ($order, $nextStatus, $validated, $orderPaymentService): void {
                 $lockedOrder = Order::query()
                     ->with('items')
                     ->lockForUpdate()
@@ -127,64 +127,9 @@ class OrderController extends Controller
                 $alreadyDeducted = $lockedOrder->stock_deducted_at !== null;
 
                 if ($shouldConsumeStock && ! $alreadyDeducted) {
-                    $variantIds = $lockedOrder->items
-                        ->pluck('product_variant_id')
-                        ->filter()
-                        ->unique()
-                        ->values();
-
-                    $variants = ProductVariant::query()
-                        ->whereIn('id', $variantIds)
-                        ->lockForUpdate()
-                        ->get()
-                        ->keyBy('id');
-
-                    foreach ($lockedOrder->items as $item) {
-                        if (! $item->product_variant_id) {
-                            continue;
-                        }
-
-                        $variant = $variants->get($item->product_variant_id);
-
-                        if (! $variant) {
-                            throw new RuntimeException("A variação \"{$item->product_name} — {$item->variant_name}\" não existe mais para baixa de estoque.");
-                        }
-
-                        if ($variant->stock < $item->quantity) {
-                            throw new RuntimeException("Estoque insuficiente para \"{$item->product_name} — {$item->variant_name}\" (disponível: {$variant->stock}, pedido: {$item->quantity}).");
-                        }
-
-                        $variant->decrement('stock', $item->quantity);
-                    }
-
-                    $lockedOrder->stock_deducted_at = now();
-                    $lockedOrder->confirmed_at ??= now();
+                    $orderPaymentService->deductStockForOrder($lockedOrder);
                 } elseif (! $shouldConsumeStock && $alreadyDeducted) {
-                    $variantIds = $lockedOrder->items
-                        ->pluck('product_variant_id')
-                        ->filter()
-                        ->unique()
-                        ->values();
-
-                    $variants = ProductVariant::query()
-                        ->whereIn('id', $variantIds)
-                        ->lockForUpdate()
-                        ->get()
-                        ->keyBy('id');
-
-                    foreach ($lockedOrder->items as $item) {
-                        if (! $item->product_variant_id) {
-                            continue;
-                        }
-
-                        $variant = $variants->get($item->product_variant_id);
-
-                        if ($variant) {
-                            $variant->increment('stock', $item->quantity);
-                        }
-                    }
-
-                    $lockedOrder->stock_deducted_at = null;
+                    $orderPaymentService->restoreStockForOrder($lockedOrder);
                 }
 
                 $lockedOrder->status = $nextStatus;
