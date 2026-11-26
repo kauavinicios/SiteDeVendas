@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\UserRole;
 use App\Models\User;
+use App\Support\LegalDocuments;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -37,6 +38,10 @@ class UserFactory extends Factory
             'marketing_opt_in' => false,
             'marketing_opt_in_at' => null,
             'marketing_opt_out_at' => null,
+            'terms_accepted_at' => now(),
+            'terms_version' => LegalDocuments::TERMS_VERSION,
+            'privacy_accepted_at' => now(),
+            'privacy_version' => LegalDocuments::PRIVACY_VERSION,
         ];
     }
 

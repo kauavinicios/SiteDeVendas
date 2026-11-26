@@ -9,13 +9,16 @@ use App\Notifications\VerifyEmailNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * Valores padrão em memória ao instanciar sem persistir.
@@ -43,6 +46,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'marketing_opt_in',
         'marketing_opt_in_at',
         'marketing_opt_out_at',
+        'terms_accepted_at',
+        'terms_version',
+        'privacy_accepted_at',
+        'privacy_version',
     ];
 
     /**
@@ -70,6 +77,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'marketing_opt_in' => 'boolean',
             'marketing_opt_in_at' => 'datetime',
             'marketing_opt_out_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
+            'privacy_accepted_at' => 'datetime',
         ];
     }
 
@@ -128,5 +137,54 @@ class User extends Authenticatable implements MustVerifyEmail
     public function sendEmailVerificationNotification(): void
     {
         $this->notify(new VerifyEmailNotification);
+    }
+
+    public function hasOrderHistory(): bool
+    {
+        return method_exists($this, 'orders') && $this->orders()->exists();
+    }
+
+    /**
+     * Anonimiza os dados pessoais do cliente e aplica soft delete para preservar
+     * a integridade contábil/fiscal do histórico de compras (LGPD Art. 16).
+     */
+    public function anonymizeAndSoftDelete(): void
+    {
+        if (! $this->isCustomer()) {
+            throw new \LogicException('Contas internas da equipe não podem ser excluídas.');
+        }
+
+        $this->forceFill([
+            'name' => 'Cliente excluído',
+            'email' => 'deleted_'.$this->id.'_'.Str::lower(Str::random(10)).'@anonimizado.local',
+            'phone' => null,
+            'password' => Hash::make(Str::random(40)),
+            'remember_token' => null,
+            'email_verified_at' => null,
+            'active' => false,
+            'marketing_opt_in' => false,
+            'marketing_opt_out_at' => now(),
+        ])->save();
+
+        $this->delete();
+    }
+
+    /**
+     * Encerra a conta do cliente: exclui definitivamente se não houver pedidos
+     * vinculados, ou anonimiza com soft delete quando houver histórico de compras.
+     */
+    public function closeCustomerAccount(): void
+    {
+        if (! $this->isCustomer()) {
+            throw new \LogicException('Contas internas da equipe não podem ser excluídas.');
+        }
+
+        if ($this->hasOrderHistory()) {
+            $this->anonymizeAndSoftDelete();
+
+            return;
+        }
+
+        $this->forceDelete();
     }
 }

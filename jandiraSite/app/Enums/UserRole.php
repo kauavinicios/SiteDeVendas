@@ -67,6 +67,7 @@ enum UserRole: string
                 Permission::ViewStock,
                 Permission::ManageStock,
                 Permission::ViewCustomers,
+                Permission::ManageCampaigns,
             ],
             self::Storekeeper => [
                 Permission::AccessAdmin,

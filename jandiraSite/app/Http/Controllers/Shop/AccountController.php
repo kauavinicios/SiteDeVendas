@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Support\EmailValidation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -98,5 +99,30 @@ class AccountController extends Controller
         return redirect()
             ->route('account.index')
             ->with('success', 'Senha alterada com sucesso.');
+    }
+
+    public function destroy(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        abort_unless($user->isCustomer(), 403, 'Contas internas da equipe não podem ser excluídas.');
+
+        $request->validateWithBag('accountDeletion', [
+            'password' => ['required', 'current_password'],
+        ], [
+            'password.required' => 'Informe sua senha atual para confirmar a exclusão.',
+            'password.current_password' => 'A senha informada está incorreta.',
+        ]);
+
+        Auth::guard('web')->logout();
+
+        $user->closeCustomerAccount();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()
+            ->route('home')
+            ->with('success', 'Sua conta foi encerrada conforme a Política de Privacidade.');
     }
 }

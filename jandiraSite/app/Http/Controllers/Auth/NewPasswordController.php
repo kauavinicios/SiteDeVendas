@@ -35,10 +35,23 @@ class NewPasswordController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        if ($request->has('email')) {
+            $request->merge([
+                'email' => Str::lower(trim((string) $request->input('email'))),
+            ]);
+        }
+
         $request->validate([
             'token' => 'required',
             'email' => ['required', EmailValidation::rule()],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ], [
+            'token.required' => 'Token de redefinição inválido.',
+            'email.required' => 'Informe seu e-mail.',
+            'email.email' => 'Informe um endereço de e-mail válido.',
+            'password.required' => 'Informe a nova senha.',
+            'password.min' => 'A senha deve ter pelo menos :min caracteres.',
+            'password.confirmed' => 'A confirmação de senha não confere.',
         ]);
 
         // Here we will attempt to reset the user's password. If it is successful we
@@ -60,11 +73,11 @@ class NewPasswordController extends Controller
         // the application's home authenticated view. If there is an error we can
         // redirect them back to where they came from with their error message.
         if ($status == Password::PasswordReset) {
-            return to_route('login')->with('status', __($status));
+            return to_route('login')->with('status', __($status, [], 'pt_BR'));
         }
 
         throw ValidationException::withMessages([
-            'email' => [__($status)],
+            'email' => [__($status, [], 'pt_BR')],
         ]);
     }
 }

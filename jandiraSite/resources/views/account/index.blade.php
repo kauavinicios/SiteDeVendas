@@ -157,6 +157,20 @@
                         <button type="submit" class="store-button-primary w-full">
                             Salvar dados
                         </button>
+
+                        @if ($user->terms_accepted_at)
+                            <p class="text-[11px] leading-relaxed text-[var(--color-text-muted)]">
+                                Você aceitou os
+                                <a href="{{ route('legal.terms') }}" target="_blank" rel="noopener noreferrer" class="font-medium text-[var(--color-primary)] underline">
+                                    Termos de Uso
+                                </a>
+                                (v{{ $user->terms_version ?? '1.0' }}) e a
+                                <a href="{{ route('legal.privacy') }}" target="_blank" rel="noopener noreferrer" class="font-medium text-[var(--color-primary)] underline">
+                                    Política de Privacidade
+                                </a>
+                                (v{{ $user->privacy_version ?? '1.0' }}) em {{ $user->terms_accepted_at->format('d/m/Y H:i') }}.
+                            </p>
+                        @endif
                     </form>
                 </div>
 
@@ -209,6 +223,51 @@
                     </form>
                 </div>
 
+            </div>
+
+            {{-- Privacidade e encerramento da conta (LGPD) --}}
+            <div class="mt-6 rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+                @if ($user->isCustomer())
+                    <h2 class="text-lg font-semibold text-[var(--color-danger)]">
+                        Privacidade e exclusão de conta
+                    </h2>
+                    <p class="mt-1 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                        Conforme a LGPD, você pode encerrar sua conta a qualquer momento. Contas sem pedidos são removidas definitivamente;
+                        caso exista histórico de compras, seus dados pessoais de cadastro são anonimizados e preservamos apenas os registros comerciais exigidos por lei
+                        (<a href="{{ route('legal.privacy') }}" class="font-medium text-[var(--color-primary)] underline">saiba mais</a>).
+                    </p>
+
+                    <form action="{{ route('account.destroy') }}" method="POST"
+                        onsubmit="return confirm('Tem certeza que deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita.');"
+                        class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
+                        @csrf
+                        @method('DELETE')
+
+                        <div class="flex-1">
+                            <label for="delete-account-password" class="mb-1.5 block text-sm font-medium text-[var(--color-text)]">
+                                Confirme sua senha atual
+                            </label>
+                            <input id="delete-account-password" type="password" name="password" required
+                                placeholder="Digite sua senha para confirmar"
+                                class="h-11 w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-danger)]">
+                            @error('password', 'accountDeletion')
+                                <p class="mt-1 text-xs text-[var(--color-danger)]">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <button type="submit"
+                            class="inline-flex h-11 shrink-0 items-center justify-center rounded-xl border border-red-200 bg-red-50 px-5 text-sm font-semibold text-[var(--color-danger)] transition hover:bg-red-100">
+                            Excluir minha conta permanentemente
+                        </button>
+                    </form>
+                @else
+                    <h2 class="text-base font-semibold text-[var(--color-text)]">
+                        Conta interna da equipe
+                    </h2>
+                    <p class="mt-1 text-sm text-[var(--color-text-muted)]">
+                        Para manter a segurança e a rastreabilidade das operações da loja, contas internas da equipe não podem ser excluídas, apenas desativadas por um administrador em <a href="{{ route('admin.users.index') }}" class="font-medium text-[var(--color-primary)] underline">Usuários</a>.
+                    </p>
+                @endif
             </div>
 
         </div>

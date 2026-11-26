@@ -17,6 +17,7 @@ interface RegisterForm {
     password: string;
     password_confirmation: string;
     marketing_opt_in: boolean;
+    terms_accepted: boolean;
     [key: string]: string | boolean;
 }
 
@@ -28,6 +29,7 @@ export default function Register() {
         password: '',
         password_confirmation: '',
         marketing_opt_in: false,
+        terms_accepted: false,
     });
 
     const submit: FormEventHandler = (e) => {
@@ -191,6 +193,45 @@ export default function Register() {
                         quiser na sua conta.
                     </span>
                 </label>
+
+                <div className="flex flex-col gap-1.5">
+                    <label
+                        htmlFor="terms_accepted"
+                        className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-background)] p-3.5"
+                    >
+                        <Checkbox
+                            id="terms_accepted"
+                            name="terms_accepted"
+                            checked={data.terms_accepted}
+                            onCheckedChange={(checked) => setData('terms_accepted', checked === true)}
+                            className="mt-0.5 border-[var(--admin-border-hover)] data-[state=checked]:border-[var(--admin-primary)] data-[state=checked]:bg-[var(--admin-primary)]"
+                        />
+
+                        <span className="text-xs leading-relaxed text-[var(--admin-text-muted)]">
+                            Li e aceito os{' '}
+                            <a
+                                href={route('legal.terms')}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-[var(--admin-primary)] underline hover:text-[var(--admin-primary-dark)]"
+                            >
+                                Termos de Uso
+                            </a>{' '}
+                            e a{' '}
+                            <a
+                                href={route('legal.privacy')}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-[var(--admin-primary)] underline hover:text-[var(--admin-primary-dark)]"
+                            >
+                                Política de Privacidade
+                            </a>{' '}
+                            (LGPD).
+                        </span>
+                    </label>
+
+                    <InputError message={errors.terms_accepted} />
+                </div>
 
                 <Button
                     type="submit"

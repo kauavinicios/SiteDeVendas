@@ -4,7 +4,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { usePermissions } from '@/hooks/use-permissions';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Boxes, LayoutDashboard, Package, ShieldCheck, Tags, Users } from 'lucide-react';
+import { Boxes, LayoutDashboard, Mail, Package, ShieldCheck, Tags, Users } from 'lucide-react';
 
 import AppLogo from './app-logo';
 
@@ -42,6 +42,12 @@ const mainNavItems: ProtectedNavItem[] = [
         url: '/admin/clientes',
         icon: Users,
         permission: 'view-customers',
+    },
+    {
+        title: 'Novidades',
+        url: '/admin/novidades',
+        icon: Mail,
+        permission: 'manage-campaigns',
     },
     {
         title: 'Usuários',

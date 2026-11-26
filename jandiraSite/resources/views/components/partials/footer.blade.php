@@ -41,16 +41,20 @@
                         Início
                     </a>
 
-                    <a href="#">
+                    <a href="{{ route('products.index', ['categorias' => ['casa']]) }}">
                         Cama
                     </a>
 
-                    <a href="#">
+                    <a href="{{ route('products.index', ['categorias' => ['perfumaria']]) }}">
                         Perfumaria
                     </a>
 
-                    <a href="#">
-                        Sobre
+                    <a href="{{ route('legal.terms') }}">
+                        Termos de Uso
+                    </a>
+
+                    <a href="{{ route('legal.privacy') }}">
+                        Política de Privacidade
                     </a>
 
                 </nav>
@@ -71,9 +75,16 @@
                         Campo Grande - MS
                     </span>
 
-                    <a href="#">
-                        Fale pelo WhatsApp
-                    </a>
+                    @php
+                        $footerWhatsappNumber = preg_replace('/\D+/', '', (string) config('services.whatsapp.number'));
+                        $footerWhatsappMessage = rawurlencode('Olá! Vim pelo site da Butique da Jandira e gostaria de atendimento.');
+                    @endphp
+
+                    @if ($footerWhatsappNumber !== '')
+                        <a href="https://wa.me/{{ $footerWhatsappNumber }}?text={{ $footerWhatsappMessage }}" target="_blank" rel="noopener noreferrer">
+                            Fale pelo WhatsApp
+                        </a>
+                    @endif
 
                     <span>
                         Consulte disponibilidade e entrega

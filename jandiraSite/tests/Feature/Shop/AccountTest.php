@@ -70,4 +70,71 @@ class AccountTest extends TestCase
 
         $this->assertTrue(Hash::check('nova-senha-123', $customer->fresh()->password));
     }
+
+    public function test_customer_can_delete_own_account_with_valid_password(): void
+    {
+        $customer = User::factory()->customer()->create([
+            'email' => 'exclusao@example.com',
+        ]);
+
+        $this->actingAs($customer)
+            ->delete(route('account.destroy'), [
+                'password' => 'password',
+            ])
+            ->assertRedirect(route('home'))
+            ->assertSessionHas('success');
+
+        $this->assertGuest();
+        $this->assertNull(User::withTrashed()->find($customer->id));
+    }
+
+    public function test_customer_cannot_delete_account_with_wrong_password(): void
+    {
+        $customer = User::factory()->customer()->create();
+
+        $this->actingAs($customer)
+            ->from(route('account.index'))
+            ->delete(route('account.destroy'), [
+                'password' => 'senha-errada',
+            ])
+            ->assertRedirect(route('account.index'))
+            ->assertSessionHasErrorsIn('accountDeletion', 'password');
+
+        $this->assertNotNull($customer->fresh());
+    }
+
+    public function test_staff_cannot_delete_own_account_on_my_account(): void
+    {
+        $staff = User::factory()->support()->create();
+
+        $this->actingAs($staff)
+            ->delete(route('account.destroy'), [
+                'password' => 'password',
+            ])
+            ->assertForbidden();
+
+        $this->assertNotNull($staff->fresh());
+    }
+
+    public function test_customer_anonymization_clears_pii_and_releases_email(): void
+    {
+        $customer = User::factory()->customer()->subscribedToMarketing()->create([
+            'name' => 'Maria Souza',
+            'email' => 'maria.souza@example.com',
+            'phone' => '67999998888',
+        ]);
+
+        $customer->anonymizeAndSoftDelete();
+
+        $trashed = User::withTrashed()->findOrFail($customer->id);
+
+        $this->assertTrue($trashed->trashed());
+        $this->assertSame('Cliente excluído', $trashed->name);
+        $this->assertNotSame('maria.souza@example.com', $trashed->email);
+        $this->assertStringEndsWith('@anonimizado.local', $trashed->email);
+        $this->assertNull($trashed->phone);
+        $this->assertFalse($trashed->active);
+        $this->assertFalse($trashed->marketing_opt_in);
+        $this->assertNull(User::where('email', 'maria.souza@example.com')->first());
+    }
 }

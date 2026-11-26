@@ -30,7 +30,7 @@ export default function AuthSimpleLayout({
                         </strong>
 
                         <span className="mt-1 text-xs">
-                            Administração
+                            Casa &amp; Perfumaria
                         </span>
                     </div>
                 </a>

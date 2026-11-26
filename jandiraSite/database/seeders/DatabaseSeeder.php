@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\UserRole;
 use App\Models\User;
+use App\Support\LegalDocuments;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -54,11 +55,16 @@ class DatabaseSeeder extends Seeder
                 ['email' => $data['email']],
                 [
                     'name' => $data['name'],
+                    'email_verified_at' => now(),
                     'password' => Hash::make('12345678'),
                     'role' => $data['role'],
                     'active' => true,
                     'marketing_opt_in' => $data['marketing_opt_in'],
                     'marketing_opt_in_at' => $data['marketing_opt_in_at'],
+                    'terms_accepted_at' => now(),
+                    'terms_version' => LegalDocuments::TERMS_VERSION,
+                    'privacy_accepted_at' => now(),
+                    'privacy_version' => LegalDocuments::PRIVACY_VERSION,
                 ]
             );
         }

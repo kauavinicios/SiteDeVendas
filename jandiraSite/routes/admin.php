@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\Permission;
+use App\Http\Controllers\Admin\CampaignController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -111,5 +112,23 @@ Route::middleware(['auth', 'active', 'staff'])
             Route::patch('/clientes/{user}/status', [CustomerController::class, 'toggleStatus'])
                 ->middleware('can:'.Permission::ManageUsers->value)
                 ->name('customers.toggle-status');
+
+            // /admin/novidades — campanhas de marketing por e-mail (LGPD)
+            Route::middleware('can:'.Permission::ManageCampaigns->value)->group(function () {
+                Route::get('/novidades', [CampaignController::class, 'index'])
+                    ->name('campaigns.index');
+
+                Route::post('/novidades', [CampaignController::class, 'store'])
+                    ->name('campaigns.store');
+
+                Route::put('/novidades/{campaign}', [CampaignController::class, 'update'])
+                    ->name('campaigns.update');
+
+                Route::get('/novidades/{campaign}/previa', [CampaignController::class, 'preview'])
+                    ->name('campaigns.preview');
+
+                Route::post('/novidades/{campaign}/enviar', [CampaignController::class, 'send'])
+                    ->name('campaigns.send');
+            });
         });
     });

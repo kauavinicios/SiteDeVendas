@@ -3,6 +3,8 @@
 use App\Http\Controllers\Shop\AccountController;
 use App\Http\Controllers\Shop\CartController;
 use App\Http\Controllers\Shop\HomeController;
+use App\Http\Controllers\Shop\LegalController;
+use App\Http\Controllers\Shop\NewsletterController;
 use App\Http\Controllers\Shop\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +22,16 @@ Route::get('/produtos', [ProductController::class, 'index'])
 
 Route::get('/produtos/{product:slug}', [ProductController::class, 'show'])
     ->name('products.show');
+
+Route::get('/termos-de-uso', [LegalController::class, 'terms'])
+    ->name('legal.terms');
+
+Route::get('/politica-de-privacidade', [LegalController::class, 'privacy'])
+    ->name('legal.privacy');
+
+Route::get('/novidades/cancelar/{user}', [NewsletterController::class, 'unsubscribe'])
+    ->middleware('signed')
+    ->name('newsletter.unsubscribe');
 
 Route::get('/carrinho', [CartController::class, 'index'])
     ->name('cart.index');
@@ -45,6 +57,9 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::put('/minha-conta/senha', [AccountController::class, 'updatePassword'])
         ->name('account.password.update');
+
+    Route::delete('/minha-conta', [AccountController::class, 'destroy'])
+        ->name('account.destroy');
 });
 
 if (app()->isLocal()) {
