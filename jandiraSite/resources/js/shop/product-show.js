@@ -1,4 +1,43 @@
 document.addEventListener('DOMContentLoaded', () => {
+    initGallery();
+    initVariants();
+});
+
+function initGallery() {
+    const mainImage = document.getElementById('product-main-image');
+    const thumbnails = document.querySelectorAll('.store-product-thumbnail[data-image-url]');
+
+    if (!mainImage || !thumbnails.length) {
+        return;
+    }
+
+    thumbnails.forEach((thumbnail) => {
+        thumbnail.addEventListener('click', () => {
+            const imageUrl = thumbnail.dataset.imageUrl;
+            const imageAlt = thumbnail.dataset.imageAlt;
+
+            if (!imageUrl) {
+                return;
+            }
+
+            mainImage.src = imageUrl;
+
+            if (imageAlt) {
+                mainImage.alt = imageAlt;
+            }
+
+            thumbnails.forEach((item) => {
+                item.classList.remove('active');
+                item.setAttribute('aria-pressed', 'false');
+            });
+
+            thumbnail.classList.add('active');
+            thumbnail.setAttribute('aria-pressed', 'true');
+        });
+    });
+}
+
+function initVariants() {
     const variantButtons = document.querySelectorAll('.store-variant-option');
 
     if (!variantButtons.length) {
@@ -89,4 +128,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
         });
     });
-});
+}

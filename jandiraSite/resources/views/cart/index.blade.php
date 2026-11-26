@@ -68,11 +68,16 @@
                                 data-delete-url="{{ route('cart.destroy', $item['variant_id']) }}"
                             >
 
-                                {{-- Imagem temporária --}}
+                                {{-- Imagem do produto --}}
                                 <div class="store-cart-image">
-                                    <span>
-                                        Imagem
-                                    </span>
+                                    @if (! empty($item['image_url']))
+                                        <img src="{{ $item['image_url'] }}" alt="{{ $item['product_name'] }}"
+                                            class="h-full w-full object-cover" loading="lazy">
+                                    @else
+                                        <span>
+                                            Imagem
+                                        </span>
+                                    @endif
                                 </div>
 
 

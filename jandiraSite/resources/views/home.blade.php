@@ -163,8 +163,8 @@
                         <div class="store-product-image">
                             @if ($produto->images->isNotEmpty())
 
-                                <img src="{{ Storage::url($produto->images->first()->path) }}" alt="{{ $produto->name }}"
-                                    class="h-full w-full object-cover">
+                                <img src="{{ $produto->images->first()->url }}" alt="{{ $produto->name }}"
+                                    class="h-full w-full object-cover" loading="lazy">
 
                             @else
 
@@ -249,9 +249,17 @@
                 </p>
             </div>
 
-            <a href="#" class="store-button-primary whitespace-nowrap">
-                Falar no WhatsApp
-            </a>
+            @php
+                $whatsappNumber = preg_replace('/\D+/', '', (string) config('services.whatsapp.number'));
+                $whatsappMessage = rawurlencode('Olá! Vim pelo site da Butique da Jandira e gostaria de tirar uma dúvida.');
+            @endphp
+
+            @if ($whatsappNumber !== '')
+                <a href="https://wa.me/{{ $whatsappNumber }}?text={{ $whatsappMessage }}" target="_blank"
+                    rel="noopener noreferrer" class="store-button-primary whitespace-nowrap">
+                    Falar no WhatsApp
+                </a>
+            @endif
 
         </div>
 

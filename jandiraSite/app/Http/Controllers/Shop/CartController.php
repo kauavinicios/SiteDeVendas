@@ -36,7 +36,7 @@ class CartController extends Controller
         ]);
 
         $variant = ProductVariant::query()
-            ->with('product')
+            ->with('product.images')
             ->where('active', true)
             ->findOrFail($request->variant_id);
 

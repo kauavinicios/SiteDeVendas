@@ -159,9 +159,9 @@
                                 <input type="hidden" name="busca" value="{{ request('busca') }}">
                             @endif
 
-                            @if (request('categoria'))
-                                <input type="hidden" name="categoria" value="{{ request('categoria') }}">
-                            @endif
+                            @foreach ((array) request('categorias', []) as $categoriaSelecionada)
+                                <input type="hidden" name="categorias[]" value="{{ $categoriaSelecionada }}">
+                            @endforeach
 
                             <label for="ordenacao" class="text-sm text-gray-500">
                                 Ordenar por
@@ -205,9 +205,14 @@
 
                                 <div class="store-product-image">
 
-                                    <span>
-                                        Imagem do produto
-                                    </span>
+                                    @if ($produto->images->isNotEmpty())
+                                        <img src="{{ $produto->images->first()->url }}" alt="{{ $produto->name }}"
+                                            class="h-full w-full object-cover" loading="lazy">
+                                    @else
+                                        <span>
+                                            Imagem do produto
+                                        </span>
+                                    @endif
 
                                 </div>
 

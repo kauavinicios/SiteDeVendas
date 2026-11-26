@@ -9,7 +9,7 @@ use Illuminate\Contracts\Session\Session;
  * Carrinho de compras guardado na sessão.
  *
  * Estrutura: [variant_id => [variant_id, product_id, product_name,
- * product_slug, variant_name, price, quantity, (stock)]]
+ * product_slug, variant_name, image_url, price, quantity, (stock)]]
  */
 class CartService
 {
@@ -47,7 +47,7 @@ class CartService
         }
 
         $variants = ProductVariant::query()
-            ->with('product')
+            ->with('product.images')
             ->whereIn('id', array_keys($cart))
             ->get()
             ->keyBy('id');
@@ -55,12 +55,17 @@ class CartService
         foreach ($cart as $variantId => &$item) {
             $variant = $variants->get($variantId);
 
-            if (! $variant) {
+            if (! $variant || ! $variant->active || ! $variant->product || ! $variant->product->active) {
                 unset($cart[$variantId]);
 
                 continue;
             }
 
+            $item['product_id'] = $variant->product->id;
+            $item['product_name'] = $variant->product->name;
+            $item['product_slug'] = $variant->product->slug;
+            $item['variant_name'] = $variant->name;
+            $item['image_url'] = $variant->product->images->first()?->url;
             $item['stock'] = $variant->stock;
             $item['price'] = (float) $variant->price;
 
@@ -87,16 +92,18 @@ class CartService
      */
     public function add(ProductVariant $variant, int $quantity): void
     {
-        $variant->loadMissing('product');
+        $variant->loadMissing('product.images');
 
         $cart = $this->items();
         $quantity = min($quantity, $variant->stock);
+        $imageUrl = $variant->product->images->first()?->url;
 
         if (isset($cart[$variant->id])) {
             $cart[$variant->id]['quantity'] = min(
                 $cart[$variant->id]['quantity'] + $quantity,
                 $variant->stock
             );
+            $cart[$variant->id]['image_url'] = $imageUrl;
         } else {
             $cart[$variant->id] = [
                 'variant_id' => $variant->id,
@@ -104,6 +111,7 @@ class CartService
                 'product_name' => $variant->product->name,
                 'product_slug' => $variant->product->slug,
                 'variant_name' => $variant->name,
+                'image_url' => $imageUrl,
                 'price' => (float) $variant->price,
                 'quantity' => $quantity,
             ];

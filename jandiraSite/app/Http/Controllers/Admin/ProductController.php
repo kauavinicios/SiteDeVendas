@@ -8,7 +8,6 @@ use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -110,7 +109,7 @@ class ProductController extends Controller
                     return [
                         'id' => $image->id,
                         'path' => $image->path,
-                        'url' => Storage::disk('public')->url($image->path),
+                        'url' => $image->url,
                         'position' => $image->position,
                     ];
                 })->values(),

@@ -31,10 +31,19 @@
                 {{-- Imagens --}}
                 <div>
 
+                    @php
+                        $imagemPrincipal = $product->images->first();
+                    @endphp
+
                     <div class="store-product-main-image">
-                        <span>
-                            Imagem principal do produto
-                        </span>
+                        @if ($imagemPrincipal)
+                            <img id="product-main-image" src="{{ $imagemPrincipal->url }}"
+                                alt="{{ $product->name }}" class="h-full w-full object-cover">
+                        @else
+                            <span>
+                                Imagem principal do produto
+                            </span>
+                        @endif
                     </div>
 
                     @if ($product->images->count() > 1)
@@ -43,11 +52,16 @@
 
                             @foreach ($product->images as $image)
 
-                                <div class="store-product-thumbnail">
-                                    <span>
-                                        {{ $loop->iteration }}
-                                    </span>
-                                </div>
+                                <button type="button"
+                                    class="store-product-thumbnail {{ $loop->first ? 'active' : '' }}"
+                                    data-image-url="{{ $image->url }}"
+                                    data-image-alt="{{ $product->name }} — foto {{ $loop->iteration }}"
+                                    aria-label="Ver foto {{ $loop->iteration }} de {{ $product->name }}"
+                                    aria-pressed="{{ $loop->first ? 'true' : 'false' }}">
+                                    <img src="{{ $image->url }}"
+                                        alt="{{ $product->name }} — miniatura {{ $loop->iteration }}"
+                                        class="h-full w-full object-cover" loading="lazy">
+                                </button>
 
                             @endforeach
 
