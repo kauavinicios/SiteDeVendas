@@ -166,9 +166,9 @@ class AnalyticsController extends Controller
 
         $mostFavorited = Product::query()
             ->where('active', true)
+            ->whereHas('favorites')
             ->withCount('favorites')
             ->withSum('variants as total_stock', 'stock')
-            ->having('favorites_count', '>', 0)
             ->orderByDesc('favorites_count')
             ->take(5)
             ->get()
@@ -182,10 +182,10 @@ class AnalyticsController extends Controller
 
         $mostRequestedRestock = ProductVariant::query()
             ->with('product')
+            ->whereHas('stockAlerts', fn ($query) => $query->whereNull('notified_at'))
             ->withCount([
                 'stockAlerts as pending_alerts_count' => fn ($query) => $query->whereNull('notified_at'),
             ])
-            ->having('pending_alerts_count', '>', 0)
             ->orderByDesc('pending_alerts_count')
             ->take(5)
             ->get()
