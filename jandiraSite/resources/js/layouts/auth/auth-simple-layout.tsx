@@ -1,5 +1,4 @@
 import AppLogoIcon from '@/components/app-logo-icon';
-import { Link } from '@inertiajs/react';
 
 interface AuthLayoutProps {
     children: React.ReactNode;
@@ -16,7 +15,7 @@ export default function AuthSimpleLayout({
     return (
         <main className="auth-page flex min-h-screen items-center justify-center px-4 py-10">
             <section className="w-full max-w-md">
-                <Link
+                <a
                     href={route('home')}
                     className="auth-brand mx-auto mb-6 flex w-fit items-center gap-3"
                     aria-label="Voltar para a loja"
@@ -34,7 +33,7 @@ export default function AuthSimpleLayout({
                             Administração
                         </span>
                     </div>
-                </Link>
+                </a>
 
                 <div className="auth-card rounded-2xl p-6 md:p-8">
                     <header className="mb-7 text-center">
@@ -54,12 +53,12 @@ export default function AuthSimpleLayout({
                     </div>
                 </div>
 
-                <Link
+                <a
                     href={route('home')}
                     className="auth-link mx-auto mt-5 block w-fit text-sm"
                 >
                     ← Voltar para a loja
-                </Link>
+                </a>
             </section>
         </main>
     );

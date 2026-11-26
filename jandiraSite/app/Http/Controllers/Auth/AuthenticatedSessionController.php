@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -27,7 +27,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request): SymfonyResponse
     {
         $request->authenticate();
 
@@ -41,23 +41,31 @@ class AuthenticatedSessionController extends Controller
             if (is_string($intended) && str_contains($intended, '/admin')) {
                 $request->session()->forget('url.intended');
             }
+
+            return Inertia::location(
+                redirect()->intended(route('home', absolute: false)),
+            );
         }
 
-        return redirect()->intended(
-            $isStaff ? route('dashboard', absolute: false) : route('home', absolute: false),
-        );
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request): SymfonyResponse
     {
+        $wasStaff = $request->user()?->isStaff() ?? false;
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        if ($wasStaff) {
+            return redirect()->route('login');
+        }
+
+        return Inertia::location(redirect('/'));
     }
 }
