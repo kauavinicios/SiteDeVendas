@@ -14,5 +14,8 @@ enum Permission: string
     case ManageStock = 'manage-stock';
     case ViewCustomers = 'view-customers';
     case ManageCampaigns = 'manage-campaigns';
+    case ViewOrders = 'view-orders';
+    case ManageOrders = 'manage-orders';
+    case ViewFinancialReports = 'view-financial-reports';
     case ManageUsers = 'manage-users';
 }

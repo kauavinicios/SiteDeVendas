@@ -204,10 +204,89 @@
                             </strong>
                         </div>
 
+                        <form
+                            id="cart-checkout-form"
+                            action="{{ route('orders.store') }}"
+                            method="POST"
+                            class="mt-6 space-y-3 border-t border-[var(--color-border)] pt-5"
+                            data-checkout-form
+                        >
+                            @csrf
 
-                        <button type="button" class="store-button-primary mt-6 w-full" data-whatsapp-number="{{ config('services.whatsapp.number') }}" data-clear-url="{{ route('cart.clear') }}" data-cart-checkout>
-                            Finalizar pedido
-                        </button>
+                            <h3 class="text-sm font-semibold text-[var(--color-text)]">
+                                Seus dados para o pedido
+                            </h3>
+
+                            @php
+                                $checkoutUser = auth()->user();
+                            @endphp
+
+                            <div>
+                                <label for="checkout-name" class="mb-1 block text-xs font-medium text-[var(--color-text)]">
+                                    Nome completo *
+                                </label>
+                                <input
+                                    id="checkout-name"
+                                    type="text"
+                                    name="customer_name"
+                                    value="{{ old('customer_name', $checkoutUser?->name) }}"
+                                    required
+                                    placeholder="Seu nome completo"
+                                    class="h-10 w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]"
+                                >
+                            </div>
+
+                            <div>
+                                <label for="checkout-phone" class="mb-1 block text-xs font-medium text-[var(--color-text)]">
+                                    WhatsApp / Telefone *
+                                </label>
+                                <input
+                                    id="checkout-phone"
+                                    type="text"
+                                    name="customer_phone"
+                                    value="{{ old('customer_phone', $checkoutUser?->phone) }}"
+                                    required
+                                    placeholder="(67) 99999-9999"
+                                    class="h-10 w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]"
+                                >
+                            </div>
+
+                            <div>
+                                <label for="checkout-email" class="mb-1 block text-xs font-medium text-[var(--color-text)]">
+                                    E-mail (opcional)
+                                </label>
+                                <input
+                                    id="checkout-email"
+                                    type="email"
+                                    name="customer_email"
+                                    value="{{ old('customer_email', $checkoutUser?->email) }}"
+                                    placeholder="seu@email.com"
+                                    class="h-10 w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]"
+                                >
+                            </div>
+
+                            <div>
+                                <label for="checkout-notes" class="mb-1 block text-xs font-medium text-[var(--color-text)]">
+                                    Observações (opcional)
+                                </label>
+                                <textarea
+                                    id="checkout-notes"
+                                    name="notes"
+                                    rows="2"
+                                    placeholder="Preferência de entrega, retirada ou recado..."
+                                    class="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]"
+                                ></textarea>
+                            </div>
+
+                            <button
+                                type="submit"
+                                class="store-button-primary mt-2 w-full"
+                                data-order-url="{{ route('orders.store') }}"
+                                data-cart-checkout
+                            >
+                                Finalizar pedido pelo WhatsApp
+                            </button>
+                        </form>
 
                         <a href="{{ route('products.index') }}" class="store-cart-continue">
                             Continuar comprando
@@ -217,6 +296,40 @@
 
                 </div>
             @endif
+
+            <div class="store-cart-empty hidden" data-order-confirmation>
+                <span class="store-eyebrow">Pedido registrado</span>
+
+                <h2 class="mt-2 text-2xl font-semibold text-[var(--color-text)]">
+                    Pedido <span data-order-code></span> criado com sucesso!
+                </h2>
+
+                <p class="mx-auto mt-2 max-w-md text-sm text-[var(--color-text-muted)]">
+                    Guarde o código do seu pedido. Se a janela do WhatsApp não abrir automaticamente, clique no botão abaixo para enviar o pedido à nossa equipe.
+                </p>
+
+                <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+                    <a
+                        href="#"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="store-button-primary hidden"
+                        data-order-whatsapp-link
+                    >
+                        Abrir atendimento no WhatsApp
+                    </a>
+
+                    @auth
+                        <a href="{{ route('account.index') }}" class="store-button-secondary">
+                            Acompanhar em Minha conta
+                        </a>
+                    @endauth
+
+                    <a href="{{ route('products.index') }}" class="store-button-secondary">
+                        Ver mais produtos
+                    </a>
+                </div>
+            </div>
 
            <div class="store-cart-empty {{ !empty($cart) ? 'hidden' : '' }}" data-cart-empty>
                 <h2 class="text-xl font-semibold">

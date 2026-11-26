@@ -1,10 +1,12 @@
 <?php
 
 use App\Enums\Permission;
+use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\CampaignController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductImageController;
 use App\Http\Controllers\Admin\ProductVariantController;
@@ -130,5 +132,19 @@ Route::middleware(['auth', 'active', 'staff'])
                 Route::post('/novidades/{campaign}/enviar', [CampaignController::class, 'send'])
                     ->name('campaigns.send');
             });
+
+            // /admin/pedidos — acompanhamento e status dos pedidos (sem exclusão)
+            Route::get('/pedidos', [OrderController::class, 'index'])
+                ->middleware('can:'.Permission::ViewOrders->value)
+                ->name('orders.index');
+
+            Route::patch('/pedidos/{order}/status', [OrderController::class, 'updateStatus'])
+                ->middleware('can:'.Permission::ManageOrders->value)
+                ->name('orders.update-status');
+
+            // /admin/relatorios — estatísticas de vendas, demanda e estimativa de lucros
+            Route::get('/relatorios', [AnalyticsController::class, 'index'])
+                ->middleware('can:'.Permission::ViewFinancialReports->value)
+                ->name('analytics.index');
         });
     });

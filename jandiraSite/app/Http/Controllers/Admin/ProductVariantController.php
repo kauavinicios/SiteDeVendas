@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ProductVariantRequest;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Services\StockAlertService;
 use Illuminate\Http\RedirectResponse;
 
 class ProductVariantController extends Controller
@@ -25,11 +26,16 @@ class ProductVariantController extends Controller
     public function update(
         ProductVariantRequest $request,
         Product $product,
-        ProductVariant $variant
+        ProductVariant $variant,
+        StockAlertService $stockAlerts,
     ): RedirectResponse {
         $this->ensureVariantBelongsToProduct($product, $variant);
 
+        $previousStock = $variant->stock;
+
         $variant->update($request->variantData());
+
+        $stockAlerts->notifyRestockedVariant($variant->fresh(), $previousStock);
 
         return back()->with(
             'success',

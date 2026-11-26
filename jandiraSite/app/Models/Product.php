@@ -42,4 +42,9 @@ class Product extends Model
         return $this->hasMany(ProductImage::class)
             ->orderBy('position');
     }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
 }

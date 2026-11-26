@@ -49,6 +49,8 @@ function initVariants() {
     const stockElement = document.getElementById('product-stock');
 
     const cartVariantInput = document.getElementById('cart-variant-id');
+    const alertVariantInput = document.getElementById('alert-variant-id');
+    const stockAlertBox = document.getElementById('stock-alert-box');
     const interestButton = document.getElementById('interest-button');
 
 
@@ -70,9 +72,17 @@ function initVariants() {
             const stock = Number(button.dataset.stock);
 
 
-            // Atualiza a variação que será enviada ao carrinho
+            // Atualiza a variação que será enviada ao carrinho e ao alerta de estoque
             if (cartVariantInput && variantId) {
                 cartVariantInput.value = variantId;
+            }
+
+            if (alertVariantInput && variantId) {
+                alertVariantInput.value = variantId;
+            }
+
+            if (stockAlertBox) {
+                stockAlertBox.classList.toggle('hidden', stock > 0);
             }
 
 

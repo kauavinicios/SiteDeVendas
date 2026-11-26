@@ -68,6 +68,9 @@ enum UserRole: string
                 Permission::ManageStock,
                 Permission::ViewCustomers,
                 Permission::ManageCampaigns,
+                Permission::ViewOrders,
+                Permission::ManageOrders,
+                Permission::ViewFinancialReports,
             ],
             self::Storekeeper => [
                 Permission::AccessAdmin,
@@ -76,6 +79,8 @@ enum UserRole: string
                 Permission::ViewCategories,
                 Permission::ViewStock,
                 Permission::ManageStock,
+                Permission::ViewOrders,
+                Permission::ManageOrders,
             ],
             self::Support => [
                 Permission::AccessAdmin,
@@ -83,6 +88,7 @@ enum UserRole: string
                 Permission::ViewCategories,
                 Permission::ViewStock,
                 Permission::ViewCustomers,
+                Permission::ViewOrders,
             ],
             self::Customer => [],
         };

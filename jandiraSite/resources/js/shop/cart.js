@@ -7,12 +7,11 @@ function initCart() {
     initInitialMessage();
 
     const cartItems = document.querySelectorAll('[data-cart-item]');
-    const checkoutButton = document.querySelector(
-        '[data-cart-checkout]'
-    );
+    const checkoutForm = document.querySelector('[data-checkout-form]');
 
-    checkoutButton?.addEventListener('click', () => {
-        openWhatsAppCheckout();
+    checkoutForm?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        submitOrderCheckout(checkoutForm);
     });
 
     if (!cartItems.length) {
@@ -484,162 +483,54 @@ function formatCurrency(value) {
 }
 
 /* =========================================================
-   CHECKOUT WHATSAPP
+   CHECKOUT WHATSAPP COM REGISTRO DE PEDIDO
    ========================================================= */
 
-/* =========================================================
-   CHECKOUT WHATSAPP
-   ========================================================= */
-
-async function openWhatsAppCheckout() {
-    const checkoutButton = document.querySelector(
-        '[data-cart-checkout]'
-    );
-
-    const cartItems = document.querySelectorAll(
-        '[data-cart-item]'
-    );
+async function submitOrderCheckout(checkoutForm) {
+    const checkoutButton = checkoutForm.querySelector('[data-cart-checkout]');
+    const cartItems = document.querySelectorAll('[data-cart-item]');
 
     if (!checkoutButton) {
         return;
     }
 
     if (!cartItems.length) {
-        showCartMessage(
-            'Seu carrinho está vazio.',
-            'error'
-        );
+        showCartMessage('Seu carrinho está vazio.', 'error');
 
         return;
     }
 
-    const whatsappNumber =
-        checkoutButton.dataset.whatsappNumber;
+    const orderUrl = checkoutButton.dataset.orderUrl || checkoutForm.getAttribute('action');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-    const clearUrl =
-        checkoutButton.dataset.clearUrl;
+    const formData = new FormData(checkoutForm);
+    const payload = {
+        customer_name: String(formData.get('customer_name') ?? '').trim(),
+        customer_phone: String(formData.get('customer_phone') ?? '').trim(),
+        customer_email: String(formData.get('customer_email') ?? '').trim(),
+        notes: String(formData.get('notes') ?? '').trim(),
+    };
 
-    if (!whatsappNumber) {
-        showCartMessage(
-            'Não foi possível iniciar o atendimento pelo WhatsApp.',
-            'error'
-        );
-
-        return;
-    }
-
-    const lines = [];
-
-    lines.push(
-        'Olá! Gostaria de fazer um pedido na Butique da Jandira.'
-    );
-
-    lines.push('');
-    lines.push('Itens do pedido:');
-    lines.push('');
-
-    let total = 0;
-
-    cartItems.forEach((cartItem, index) => {
-        const productName =
-            cartItem.dataset.productName;
-
-        const variantName =
-            cartItem.dataset.variantName;
-
-        const unitPrice =
-            Number(cartItem.dataset.unitPrice);
-
-        const quantityInput =
-            cartItem.querySelector('[data-cart-quantity]');
-
-        const quantity =
-            Number(quantityInput?.value ?? 0);
-
-        const subtotal =
-            unitPrice * quantity;
-
-        total += subtotal;
-
-        lines.push(`${index + 1}. ${productName}`);
-
-        lines.push(
-            `Variação: ${variantName}`
-        );
-
-        lines.push(
-            `Quantidade: ${quantity}`
-        );
-
-        lines.push(
-            `Valor unitário: ${formatCurrency(unitPrice)}`
-        );
-
-        lines.push(
-            `Subtotal: ${formatCurrency(subtotal)}`
-        );
-
-        lines.push('');
-    });
-
-    lines.push(
-        `Total do pedido: ${formatCurrency(total)}`
-    );
-
-    lines.push('');
-
-    lines.push(
-        'Gostaria de confirmar a disponibilidade e combinar o pagamento e a entrega.'
-    );
-
-    const message = lines.join('\n');
-
-    const whatsappUrl =
-        `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-
-    /*
-     * Abrimos primeiro o WhatsApp.
-     * Isso reduz a chance de o navegador bloquear a nova aba.
-     */
-    window.open(
-        whatsappUrl,
-        '_blank',
-        'noopener,noreferrer'
-    );
-
-    /*
-     * Depois limpamos o carrinho da sessão.
-     */
-    await clearCart(clearUrl);
-}
-
-async function clearCart(clearUrl) {
-    if (!clearUrl) {
-        return;
-    }
-
-    const csrfToken = document
-        .querySelector('meta[name="csrf-token"]')
-        ?.getAttribute('content');
+    const originalText = checkoutButton.textContent;
+    checkoutButton.disabled = true;
+    checkoutButton.textContent = 'Registrando pedido...';
 
     try {
-        const response = await fetch(clearUrl, {
-            method: 'DELETE',
-
+        const response = await fetch(orderUrl, {
+            method: 'POST',
             headers: {
+                'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': csrfToken,
             },
+            body: JSON.stringify(payload),
         });
 
         const data = await response.json();
 
         if (!response.ok || !data.success) {
-            console.error(
-                'Não foi possível limpar o carrinho.'
-            );
-
-            return;
+            const firstError = data?.errors ? Object.values(data.errors).flat()[0] : null;
+            throw new Error(firstError || data?.message || 'Não foi possível registrar o pedido.');
         }
 
         updateCartSummary({
@@ -647,13 +538,49 @@ async function clearCart(clearUrl) {
             total: 0,
         });
 
-        showEmptyCart();
+        showOrderConfirmation(data.order, data.whatsapp_url);
 
+        if (data.whatsapp_url) {
+            window.open(data.whatsapp_url, '_blank', 'noopener,noreferrer');
+        }
     } catch (error) {
-        console.error(
-            'Erro ao limpar o carrinho:',
-            error
-        );
+        showCartMessage(error.message, 'error');
+    } finally {
+        checkoutButton.disabled = false;
+        checkoutButton.textContent = originalText;
+    }
+}
+
+function showOrderConfirmation(order, whatsappUrl) {
+    const cartContent = document.querySelector('[data-cart-content]');
+    const emptyCart = document.querySelector('[data-cart-empty]');
+    const confirmation = document.querySelector('[data-order-confirmation]');
+    const codeElement = document.querySelector('[data-order-code]');
+    const whatsappLink = document.querySelector('[data-order-whatsapp-link]');
+
+    if (cartContent) {
+        cartContent.classList.add('hidden');
+    }
+
+    if (emptyCart) {
+        emptyCart.classList.add('hidden');
+    }
+
+    if (codeElement && order?.code) {
+        codeElement.textContent = `#${order.code}`;
+    }
+
+    if (whatsappLink) {
+        if (whatsappUrl) {
+            whatsappLink.href = whatsappUrl;
+            whatsappLink.classList.remove('hidden');
+        } else {
+            whatsappLink.classList.add('hidden');
+        }
+    }
+
+    if (confirmation) {
+        confirmation.classList.remove('hidden');
     }
 }
 

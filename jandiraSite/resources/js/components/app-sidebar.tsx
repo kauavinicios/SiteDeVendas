@@ -4,7 +4,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { usePermissions } from '@/hooks/use-permissions';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Boxes, LayoutDashboard, Mail, Package, ShieldCheck, Tags, Users } from 'lucide-react';
+import { BarChart3, Boxes, LayoutDashboard, Mail, Package, ShieldCheck, ShoppingBag, Tags, Users } from 'lucide-react';
 
 import AppLogo from './app-logo';
 
@@ -18,6 +18,18 @@ const mainNavItems: ProtectedNavItem[] = [
         url: '/admin/dashboard',
         icon: LayoutDashboard,
         permission: 'access-admin',
+    },
+    {
+        title: 'Pedidos',
+        url: '/admin/pedidos',
+        icon: ShoppingBag,
+        permission: 'view-orders',
+    },
+    {
+        title: 'Relatórios',
+        url: '/admin/relatorios',
+        icon: BarChart3,
+        permission: 'view-financial-reports',
     },
     {
         title: 'Produtos',

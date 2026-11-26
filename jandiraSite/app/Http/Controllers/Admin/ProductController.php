@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Permission;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ProductRequest;
 use App\Models\Category;
@@ -120,6 +121,9 @@ class ProductController extends Controller
                         'name' => $variant->name,
                         'sku' => $variant->sku,
                         'price' => $variant->price,
+                        'cost_price' => request()->user()?->hasPermission(Permission::ViewFinancialReports)
+                            ? $variant->cost_price
+                            : null,
                         'stock' => $variant->stock,
                         'active' => $variant->active,
                     ];

@@ -225,6 +225,163 @@
 
             </div>
 
+            {{-- Meus preferidos --}}
+            <div class="mt-6 rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+                <div>
+                    <h2 class="text-lg font-semibold text-[var(--color-text)]">
+                        Meus preferidos
+                    </h2>
+                    <p class="text-sm text-[var(--color-text-muted)]">
+                        Produtos salvos por você. Quando um item esgotado voltar ao estoque, enviaremos um aviso por e-mail.
+                    </p>
+                </div>
+
+                @if ($favorites->isNotEmpty())
+                    <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                        @foreach ($favorites as $favorite)
+                            @php
+                                $favProduct = $favorite->product;
+                                $activeVariants = $favProduct->variants->where('active', true);
+                                $minPrice = $activeVariants->min('price');
+                                $hasStock = $activeVariants->sum('stock') > 0;
+                                $thumbUrl = $favProduct->images->first()?->url;
+                            @endphp
+
+                            <article class="flex items-center gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4">
+                                <div class="size-16 shrink-0 overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-soft)]">
+                                    @if ($thumbUrl)
+                                        <img src="{{ $thumbUrl }}" alt="{{ $favProduct->name }}" class="h-full w-full object-cover" loading="lazy">
+                                    @endif
+                                </div>
+
+                                <div class="min-w-0 flex-1">
+                                    <a href="{{ route('products.show', $favProduct) }}" class="block truncate text-sm font-semibold text-[var(--color-text)] hover:text-[var(--color-primary)]">
+                                        {{ $favProduct->name }}
+                                    </a>
+
+                                    <p class="mt-0.5 text-xs text-[var(--color-text-muted)]">
+                                        {{ $minPrice !== null ? 'A partir de R$ '.number_format((float) $minPrice, 2, ',', '.') : 'Consulte o preço' }}
+                                    </p>
+
+                                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                                        @if ($hasStock)
+                                            <span class="inline-flex rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-700">
+                                                Disponível
+                                            </span>
+                                        @else
+                                            <span class="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+                                                Esgotado (aviso ativo)
+                                            </span>
+                                        @endif
+
+                                        <form action="{{ route('favorites.toggle', $favProduct) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="text-[11px] font-medium text-[var(--color-danger)] hover:underline">
+                                                Remover
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="mt-5 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-page-soft)] px-4 py-6 text-center text-sm text-[var(--color-text-muted)]">
+                        Você ainda não salvou produtos nos preferidos. Clique em <strong>Favoritar</strong> na página de qualquer produto!
+                    </p>
+                @endif
+            </div>
+
+            {{-- Minhas compras e estatísticas --}}
+            <div class="mt-6 rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+                <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-[var(--color-text)]">
+                            Minhas compras e estatísticas
+                        </h2>
+                        <p class="text-sm text-[var(--color-text-muted)]">
+                            Acompanhe o status dos pedidos feitos na loja e seu resumo de compras confirmadas.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-page-soft)] p-4">
+                        <p class="text-xs font-medium text-[var(--color-text-muted)]">Pedidos realizados</p>
+                        <p class="mt-1 text-xl font-semibold text-[var(--color-text)]">{{ $orderStats['total_orders'] }}</p>
+                    </div>
+
+                    <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-page-soft)] p-4">
+                        <p class="text-xs font-medium text-[var(--color-text-muted)]">Pedidos confirmados</p>
+                        <p class="mt-1 text-xl font-semibold text-[var(--color-text)]">{{ $orderStats['confirmed_orders'] }}</p>
+                    </div>
+
+                    <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-page-soft)] p-4">
+                        <p class="text-xs font-medium text-[var(--color-text-muted)]">Itens adquiridos</p>
+                        <p className="mt-1 text-xl font-semibold text-[var(--color-text)]">{{ $orderStats['total_items'] }}</p>
+                    </div>
+
+                    <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-page-soft)] p-4">
+                        <p class="text-xs font-medium text-[var(--color-text-muted)]">Total em compras</p>
+                        <p class="mt-1 text-xl font-semibold text-[var(--color-primary)]">
+                            R$ {{ number_format($orderStats['total_spent'], 2, ',', '.') }}
+                        </p>
+                    </div>
+                </div>
+
+                @if ($orders->isNotEmpty())
+                    <div class="mt-6 space-y-4">
+                        @foreach ($orders as $order)
+                            @php
+                                $badgeClasses = match ($order->status->tone()) {
+                                    'success' => 'bg-green-50 text-green-700',
+                                    'danger' => 'bg-red-50 text-red-700',
+                                    'info' => 'bg-blue-50 text-blue-700',
+                                    'primary' => 'bg-[var(--color-surface-soft)] text-[var(--color-primary)]',
+                                    default => 'bg-amber-50 text-amber-800',
+                                };
+                            @endphp
+
+                            <article class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4">
+                                <div class="flex flex-wrap items-center justify-between gap-3">
+                                    <div>
+                                        <p class="text-sm font-semibold text-[var(--color-text)]">
+                                            Pedido #{{ $order->code }}
+                                        </p>
+                                        <p class="text-xs text-[var(--color-text-muted)]">
+                                            Realizado em {{ $order->created_at?->format('d/m/Y H:i') }} &bull; {{ $order->items_count }} item(ns)
+                                        </p>
+                                    </div>
+
+                                    <div class="flex items-center gap-3">
+                                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium {{ $badgeClasses }}">
+                                            {{ $order->status->label() }}
+                                        </span>
+
+                                        <strong class="text-sm font-semibold text-[var(--color-text)]">
+                                            R$ {{ number_format((float) $order->total, 2, ',', '.') }}
+                                        </strong>
+                                    </div>
+                                </div>
+
+                                <ul class="mt-3 space-y-1 border-t border-[var(--color-border)] pt-3 text-xs text-[var(--color-text-muted)]">
+                                    @foreach ($order->items as $item)
+                                        <li class="flex justify-between gap-4">
+                                            <span>{{ $item->quantity }}x {{ $item->product_name }} ({{ $item->variant_name }})</span>
+                                            <span>R$ {{ number_format((float) $item->subtotal, 2, ',', '.') }}</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </article>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="mt-5 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-page-soft)] px-4 py-6 text-center text-sm text-[var(--color-text-muted)]">
+                        Você ainda não realizou nenhum pedido.
+                    </p>
+                @endif
+            </div>
+
             {{-- Privacidade e encerramento da conta (LGPD) --}}
             <div class="mt-6 rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)]">
                 @if ($user->isCustomer())

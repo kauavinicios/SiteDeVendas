@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Shop;
 
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Support\EmailValidation;
 use Illuminate\Http\RedirectResponse;
@@ -16,8 +17,35 @@ class AccountController extends Controller
 {
     public function index(Request $request): View
     {
+        $user = $request->user();
+
+        $orders = $user->orders()
+            ->with('items')
+            ->latest()
+            ->take(20)
+            ->get();
+
+        $allUserOrders = $user->orders()->get(['status', 'total', 'items_count', 'created_at']);
+        $completedOrders = $allUserOrders->filter(
+            fn ($order) => $order->status instanceof OrderStatus && $order->status->countsAsRevenue()
+        );
+
+        $favorites = $user->favorites()
+            ->with(['product.category', 'product.images', 'product.variants'])
+            ->whereHas('product', fn ($query) => $query->where('active', true))
+            ->latest()
+            ->get();
+
         return view('account.index', [
-            'user' => $request->user(),
+            'user' => $user,
+            'orders' => $orders,
+            'favorites' => $favorites,
+            'orderStats' => [
+                'total_orders' => $allUserOrders->count(),
+                'confirmed_orders' => $completedOrders->count(),
+                'total_items' => (int) $completedOrders->sum('items_count'),
+                'total_spent' => (float) $completedOrders->sum('total'),
+            ],
         ]);
     }
 

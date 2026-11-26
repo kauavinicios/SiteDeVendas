@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+import { usePermissions } from '@/hooks/use-permissions';
 import { router, useForm } from '@inertiajs/react';
 import { Boxes, Pencil, Plus, Power } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
@@ -13,6 +14,7 @@ export type ProductVariant = {
     name: string;
     sku: string | null;
     price: string;
+    cost_price: string | null;
     stock: number;
     active: boolean;
 };
@@ -21,6 +23,7 @@ type VariantFormData = {
     name: string;
     sku: string;
     price: string;
+    cost_price: string;
     stock: string;
     active: boolean;
 };
@@ -31,6 +34,9 @@ type ProductVariantsProps = {
 };
 
 export default function ProductVariants({ productId, variants }: ProductVariantsProps) {
+    const { can } = usePermissions();
+    const canViewFinancial = can('view-financial-reports');
+
     const [open, setOpen] = useState(false);
 
     const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null);
@@ -40,6 +46,7 @@ export default function ProductVariants({ productId, variants }: ProductVariants
         name: '',
         sku: '',
         price: '',
+        cost_price: '',
         stock: '0',
         active: true,
     });
@@ -93,6 +100,7 @@ export default function ProductVariants({ productId, variants }: ProductVariants
             name: '',
             sku: '',
             price: '',
+            cost_price: '',
             stock: '0',
             active: true,
         });
@@ -108,6 +116,7 @@ export default function ProductVariants({ productId, variants }: ProductVariants
             name: variant.name,
             sku: variant.sku ?? '',
             price: String(variant.price),
+            cost_price: variant.cost_price ?? '',
             stock: String(variant.stock),
             active: variant.active,
         });
@@ -130,6 +139,7 @@ export default function ProductVariants({ productId, variants }: ProductVariants
                 name: variant.name,
                 sku: variant.sku ?? '',
                 price: variant.price,
+                ...(canViewFinancial ? { cost_price: variant.cost_price ?? '' } : {}),
                 stock: variant.stock,
                 active: !variant.active,
             },
@@ -172,6 +182,8 @@ export default function ProductVariants({ productId, variants }: ProductVariants
 
                                     <TableHeader>Preço</TableHeader>
 
+                                    {canViewFinancial && <TableHeader>Custo</TableHeader>}
+
                                     <TableHeader>Estoque</TableHeader>
 
                                     <TableHeader>Status</TableHeader>
@@ -193,6 +205,10 @@ export default function ProductVariants({ productId, variants }: ProductVariants
                                         <TableCell>{variant.sku || '—'}</TableCell>
 
                                         <TableCell>{formatPrice(variant.price)}</TableCell>
+
+                                        {canViewFinancial && (
+                                            <TableCell>{variant.cost_price !== null ? formatPrice(variant.cost_price) : '—'}</TableCell>
+                                        )}
 
                                         <TableCell>
                                             <div className="flex items-center gap-2">
@@ -333,6 +349,29 @@ export default function ProductVariants({ productId, variants }: ProductVariants
                                 <InputError message={errors.stock} />
                             </div>
                         </div>
+
+                        {canViewFinancial && (
+                            <div className="grid gap-2">
+                                <Label htmlFor="variant-cost-price">Preço de custo (R$ — opcional)</Label>
+
+                                <Input
+                                    id="variant-cost-price"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={data.cost_price}
+                                    onChange={(e) => setData('cost_price', e.target.value)}
+                                    placeholder="0,00"
+                                    className="h-11 rounded-xl border-[var(--admin-border)] bg-[var(--admin-background)]"
+                                />
+
+                                <p className="text-xs text-[var(--admin-text-muted)]">
+                                    Uso interno de Administração e Gerência para estimar lucros nos relatórios.
+                                </p>
+
+                                <InputError message={errors.cost_price} />
+                            </div>
+                        )}
 
                         <label
                             htmlFor="variant-active"

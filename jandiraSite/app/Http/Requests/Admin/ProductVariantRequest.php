@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\Permission;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -31,6 +32,7 @@ class ProductVariantRequest extends FormRequest
                 Rule::unique('product_variants', 'sku')->ignore($variantId),
             ],
             'price' => ['required', 'numeric', 'min:0'],
+            'cost_price' => ['nullable', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
             'active' => ['required', 'boolean'],
         ];
@@ -48,6 +50,14 @@ class ProductVariantRequest extends FormRequest
         $data['sku'] = $this->filled('sku')
             ? trim($data['sku'])
             : null;
+
+        if (! $this->user()?->hasPermission(Permission::ViewFinancialReports)) {
+            unset($data['cost_price']);
+        } else {
+            $data['cost_price'] = $this->filled('cost_price')
+                ? $data['cost_price']
+                : null;
+        }
 
         return $data;
     }

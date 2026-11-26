@@ -114,7 +114,7 @@ class ProductController extends Controller
         ));
     }
 
-    public function show(Product $product)
+    public function show(Request $request, Product $product)
     {
         abort_unless($product->active, 404);
 
@@ -128,6 +128,10 @@ class ProductController extends Controller
             'images',
         ]);
 
-        return view('products.show', compact('product'));
+        $isFavorited = $request->user()
+            ? $request->user()->favorites()->where('product_id', $product->id)->exists()
+            : false;
+
+        return view('products.show', compact('product', 'isFavorited'));
     }
 }

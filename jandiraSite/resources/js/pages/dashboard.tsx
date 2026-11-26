@@ -2,7 +2,7 @@ import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { Boxes, Package, Plus, ShieldCheck, Star, Tags, Users } from 'lucide-react';
+import { BarChart3, BellRing, Boxes, Clock3, DollarSign, Mail, Package, Plus, ShieldCheck, ShoppingBag, Star, Tags, TrendingUp, Users } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -16,6 +16,14 @@ interface DashboardStats {
     categories: number;
     stock: number;
     featured: number;
+}
+
+interface DashboardSummary {
+    pending_orders: number;
+    confirmed_orders_30d: number;
+    pending_stock_alerts: number;
+    revenue_30d: number | null;
+    estimated_profit_30d: number | null;
 }
 
 interface RecentProduct {
@@ -33,22 +41,36 @@ interface RecentProduct {
 
 interface DashboardProps {
     stats: DashboardStats;
+    summary?: DashboardSummary;
     recentProducts: RecentProduct[];
 }
 
-export default function Dashboard({ stats, recentProducts }: DashboardProps) {
+export default function Dashboard({ stats, summary, recentProducts }: DashboardProps) {
     const { can } = usePermissions();
     const canManageProducts = can('manage-products');
+    const canViewFinancial = can('view-financial-reports');
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
 
             <main className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
-                <section>
-                    <h1 className="text-2xl font-semibold text-[var(--admin-text)]">Visão geral</h1>
+                <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-semibold text-[var(--admin-text)]">Visão geral</h1>
 
-                    <p className="mt-1 text-sm text-[var(--admin-text-muted)]">Acompanhe os principais dados e atalhos da loja.</p>
+                        <p className="mt-1 text-sm text-[var(--admin-text-muted)]">Acompanhe os principais dados e atalhos da loja.</p>
+                    </div>
+
+                    {canViewFinancial && (
+                        <Link
+                            href="/admin/relatorios"
+                            className="inline-flex h-10 items-center gap-2 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] px-4 text-sm font-medium text-[var(--admin-primary)] transition-colors hover:border-[var(--admin-primary)] hover:bg-[var(--admin-background-soft)]"
+                        >
+                            <BarChart3 className="size-4" aria-hidden="true" />
+                            Ver relatórios e lucros
+                        </Link>
+                    )}
                 </section>
 
                 <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -60,6 +82,42 @@ export default function Dashboard({ stats, recentProducts }: DashboardProps) {
 
                     <DashboardCard title="Destaques" value={stats.featured} description="Produtos em destaque" icon={Star} />
                 </section>
+
+                {summary && (
+                    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        <DashboardCard
+                            title="Pedidos pendentes"
+                            value={summary.pending_orders}
+                            description="Aguardando confirmação no WhatsApp"
+                            icon={Clock3}
+                        />
+
+                        <DashboardCard
+                            title="Alertas de estoque"
+                            value={summary.pending_stock_alerts}
+                            description="Clientes no Avise-me"
+                            icon={BellRing}
+                        />
+
+                        {canViewFinancial && summary.revenue_30d !== null && (
+                            <DashboardCard
+                                title="Faturamento (30d)"
+                                value={formatCurrency(summary.revenue_30d)}
+                                description={`${summary.confirmed_orders_30d} pedido(s) confirmado(s)`}
+                                icon={DollarSign}
+                            />
+                        )}
+
+                        {canViewFinancial && summary.estimated_profit_30d !== null && (
+                            <DashboardCard
+                                title="Lucro estimado (30d)"
+                                value={formatCurrency(summary.estimated_profit_30d)}
+                                description="Baseado no custo cadastrado"
+                                icon={TrendingUp}
+                            />
+                        )}
+                    </section>
+                )}
 
                 <section className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
                     <div className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] p-5 shadow-sm md:p-6">
@@ -135,6 +193,24 @@ export default function Dashboard({ stats, recentProducts }: DashboardProps) {
                         </div>
 
                         <div className="grid gap-3">
+                            {can('view-orders') && (
+                                <QuickAction
+                                    href="/admin/pedidos"
+                                    icon={ShoppingBag}
+                                    title={can('manage-orders') ? 'Gerenciar pedidos' : 'Consultar pedidos'}
+                                    description="Acompanhe os pedidos e atualize status."
+                                />
+                            )}
+
+                            {canViewFinancial && (
+                                <QuickAction
+                                    href="/admin/relatorios"
+                                    icon={BarChart3}
+                                    title="Relatórios e lucros"
+                                    description="Veja gráficos de vendas, margem e demanda."
+                                />
+                            )}
+
                             {can('view-products') && (
                                 <QuickAction
                                     href="/admin/produtos"
@@ -184,6 +260,15 @@ export default function Dashboard({ stats, recentProducts }: DashboardProps) {
                                 />
                             )}
 
+                            {can('manage-campaigns') && (
+                                <QuickAction
+                                    href="/admin/novidades"
+                                    icon={Mail}
+                                    title="Novidades por e-mail"
+                                    description="Crie campanhas LGPD com o visual da loja."
+                                />
+                            )}
+
                             {can('manage-users') && (
                                 <QuickAction
                                     href="/admin/usuarios"
@@ -225,6 +310,13 @@ function DashboardCard({ title, value, description, icon: Icon }: DashboardCardP
             <p className="mt-3 text-xs text-[var(--admin-text-muted)]">{description}</p>
         </article>
     );
+}
+
+function formatCurrency(value: number): string {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    }).format(value);
 }
 
 interface QuickActionProps {

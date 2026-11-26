@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StockUpdateRequest;
 use App\Models\ProductVariant;
+use App\Services\StockAlertService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -98,12 +99,21 @@ class StockController extends Controller
 
     public function update(
         StockUpdateRequest $request,
-        ProductVariant $variant
+        ProductVariant $variant,
+        StockAlertService $stockAlerts,
     ): RedirectResponse {
+        $previousStock = $variant->stock;
+
         $variant->update([
             'stock' => $request->integer('stock'),
         ]);
 
-        return back()->with('success', 'Estoque atualizado com sucesso.');
+        $notifiedCount = $stockAlerts->notifyRestockedVariant($variant->fresh(), $previousStock);
+
+        $message = $notifiedCount > 0
+            ? "Estoque atualizado com sucesso. {$notifiedCount} aviso(s) de reposição colocado(s) na fila."
+            : 'Estoque atualizado com sucesso.';
+
+        return back()->with('success', $message);
     }
 }

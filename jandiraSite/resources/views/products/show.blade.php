@@ -25,6 +25,18 @@
                 </a>
             </div>
 
+            @if (session('success'))
+                <div class="mb-6 rounded-xl border border-[#cfe0d2] bg-[#f2f8f3] px-4 py-3 text-sm font-medium text-[var(--color-success)]">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--color-danger)]">
+                    {{ session('error') }}
+                </div>
+            @endif
+
 
             <div class="grid gap-10 lg:grid-cols-2 lg:gap-14">
 
@@ -174,30 +186,90 @@
                     </div>
 
                     {{-- Ação --}}
-                    <form action="{{ route('cart.store') }}" method="POST" id="cart-form">
-                        @csrf
-                        <input
-                            type="hidden"
-                            name="variant_id"
-                            id="cart-variant-id"
-                            value="{{ $primeiraVariacao?->id }}"
-                        >
+                    <div class="mt-6 flex flex-wrap items-center gap-3">
+                        <form action="{{ route('cart.store') }}" method="POST" id="cart-form">
+                            @csrf
+                            <input
+                                type="hidden"
+                                name="variant_id"
+                                id="cart-variant-id"
+                                value="{{ $primeiraVariacao?->id }}"
+                            >
 
-                        <input
-                            type="hidden"
-                            name="quantity"
-                            value="1"
-                        >
+                            <input
+                                type="hidden"
+                                name="quantity"
+                                value="1"
+                            >
 
-                        <button
-                            type="submit"
-                            id="interest-button"
-                            class="store-button-primary"
-                            {{ !$primeiraVariacao || $primeiraVariacao->stock <= 0 ? 'disabled' : '' }}
+                            <button
+                                type="submit"
+                                id="interest-button"
+                                class="store-button-primary"
+                                {{ !$primeiraVariacao || $primeiraVariacao->stock <= 0 ? 'disabled' : '' }}
+                            >
+                                Adicionar ao carrinho
+                            </button>
+                        </form>
+
+                        @auth
+                            <form action="{{ route('favorites.toggle', $product) }}" method="POST">
+                                @csrf
+                                <button
+                                    type="submit"
+                                    class="store-button-secondary {{ $isFavorited ? '!bg-[var(--color-surface-soft)]' : '' }}"
+                                >
+                                    {{ $isFavorited ? '♥ Nos meus preferidos' : '♡ Favoritar' }}
+                                </button>
+                            </form>
+                        @else
+                            <a href="{{ route('login') }}" class="store-button-secondary">
+                                ♡ Favoritar
+                            </a>
+                        @endauth
+                    </div>
+
+                    {{-- Alerta de reposição de estoque ("Avise-me") --}}
+                    @if ($product->variants->isNotEmpty())
+                        <div
+                            id="stock-alert-box"
+                            class="mt-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-page-soft)] p-5 {{ $primeiraVariacao && $primeiraVariacao->stock <= 0 ? '' : 'hidden' }}"
                         >
-                            Adicionar ao carrinho
-                        </button>
-                    </form>
+                            <h3 class="text-sm font-semibold text-[var(--color-text)]">
+                                Avise-me quando voltar ao estoque
+                            </h3>
+                            <p class="mt-1 text-xs leading-relaxed text-[var(--color-text-muted)]">
+                                Informe seu e-mail para receber um aviso automático assim que esta opção for reposta.
+                            </p>
+
+                            <form action="{{ route('stock-alerts.store') }}" method="POST" class="mt-3 flex flex-col gap-2 sm:flex-row">
+                                @csrf
+                                <input
+                                    type="hidden"
+                                    name="variant_id"
+                                    id="alert-variant-id"
+                                    value="{{ $primeiraVariacao?->id }}"
+                                >
+
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value="{{ old('email', auth()->user()?->email) }}"
+                                    required
+                                    placeholder="seu@email.com"
+                                    class="h-10 flex-1 rounded-xl border border-[var(--color-border)] bg-white px-3.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]"
+                                >
+
+                                <button type="submit" class="store-button-primary whitespace-nowrap">
+                                    Avise-me por e-mail
+                                </button>
+                            </form>
+
+                            @error('email')
+                                <p class="mt-2 text-xs text-[var(--color-danger)]">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    @endif
 
 
                     {{-- Descrição --}}

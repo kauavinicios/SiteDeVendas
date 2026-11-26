@@ -16,11 +16,14 @@ class ProductVariantFactory extends Factory
      */
     public function definition(): array
     {
+        $price = $this->faker->randomFloat(2, 20, 300);
+
         return [
             'product_id' => Product::factory(),
             'name' => $this->faker->randomElement(['Solteiro', 'Casal', 'Queen', 'King', '50 ml', '100 ml']),
             'sku' => strtoupper($this->faker->unique()->bothify('SKU-####-??')),
-            'price' => $this->faker->randomFloat(2, 20, 300),
+            'price' => $price,
+            'cost_price' => round($price * 0.55, 2),
             'stock' => $this->faker->numberBetween(1, 10),
             'active' => true,
         ];
