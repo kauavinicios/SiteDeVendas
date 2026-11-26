@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Enums\UserRole;
+use App\Support\EmailValidation;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -27,7 +28,7 @@ class UserUpdateRequest extends FormRequest
                 'required',
                 'string',
                 'lowercase',
-                'email',
+                EmailValidation::rule(),
                 'max:255',
                 Rule::unique('users', 'email')->ignore($userId),
             ],

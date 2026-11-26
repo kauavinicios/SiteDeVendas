@@ -47,6 +47,33 @@
                 </div>
             @endif
 
+            @if (session('status') === 'verification-link-sent')
+                <div class="mb-6 rounded-xl border border-[#cfe0d2] bg-[#f2f8f3] px-4 py-3 text-sm font-medium text-[var(--color-success)]">
+                    Enviamos um novo link de confirmação para o seu e-mail. Confira sua caixa de entrada e spam.
+                </div>
+            @endif
+
+            @if (! $user->hasVerifiedEmail())
+                <div class="mb-6 flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-sm font-semibold text-amber-900">
+                            Confirme seu endereço de e-mail
+                        </h2>
+                        <p class="mt-1 text-xs leading-relaxed text-amber-800">
+                            Seu e-mail ainda não foi verificado. Confirmá-lo garante a segurança da sua conta e libera o recebimento de novidades da loja.
+                        </p>
+                    </div>
+
+                    <form action="{{ route('verification.send') }}" method="POST" class="shrink-0">
+                        @csrf
+                        <button type="submit"
+                            class="inline-flex h-10 items-center justify-center rounded-xl border border-amber-300 bg-white px-4 text-xs font-semibold text-amber-900 transition hover:bg-amber-100">
+                            Reenviar link de confirmação
+                        </button>
+                    </form>
+                </div>
+            @endif
+
             <div class="grid gap-6 md:grid-cols-2">
 
                 {{-- Dados pessoais e novidades --}}
@@ -74,9 +101,21 @@
                         </div>
 
                         <div>
-                            <label for="account-email" class="mb-1.5 block text-sm font-medium text-[var(--color-text)]">
-                                E-mail
-                            </label>
+                            <div class="mb-1.5 flex items-center justify-between gap-2">
+                                <label for="account-email" class="block text-sm font-medium text-[var(--color-text)]">
+                                    E-mail
+                                </label>
+
+                                @if ($user->hasVerifiedEmail())
+                                    <span class="inline-flex items-center rounded-full bg-[#f2f8f3] px-2.5 py-0.5 text-[11px] font-medium text-[var(--color-success)]">
+                                        Verificado
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-medium text-amber-800">
+                                        Aguardando confirmação
+                                    </span>
+                                @endif
+                            </div>
                             <input id="account-email" type="email" name="email" value="{{ old('email', $user->email) }}" required
                                 class="h-11 w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]">
                             @error('email')

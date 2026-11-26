@@ -47,6 +47,34 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->name('account.password.update');
 });
 
+if (app()->isLocal()) {
+    Route::prefix('dev/emails')->group(function () {
+        Route::get('/reset-password', function () {
+            $url = url('/reset-password/token-exemplo?email=cliente@gmail.com');
+
+            return view('emails.reset-password', [
+                'userName' => 'Maria Silva',
+                'resetUrl' => $url,
+                'actionText' => 'Redefinir minha senha',
+                'actionUrl' => $url,
+                'expireMinutes' => 60,
+            ]);
+        });
+
+        Route::get('/verify-email', function () {
+            $url = url('/verify-email/1/hash-exemplo');
+
+            return view('emails.verify-email', [
+                'userName' => 'Maria Silva',
+                'verificationUrl' => $url,
+                'actionText' => 'Confirmar meu e-mail',
+                'actionUrl' => $url,
+                'expireMinutes' => 60,
+            ]);
+        });
+    });
+}
+
 require __DIR__.'/admin.php';
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

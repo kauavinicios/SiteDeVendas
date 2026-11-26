@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
+use App\Support\EmailValidation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -29,7 +30,7 @@ class AccountController extends Controller
                 'required',
                 'string',
                 'lowercase',
-                'email',
+                EmailValidation::rule(),
                 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
@@ -57,15 +58,25 @@ class AccountController extends Controller
             $user->marketing_opt_out_at = now();
         }
 
-        if ($user->isDirty('email')) {
+        $emailChanged = $user->isDirty('email');
+
+        if ($emailChanged) {
             $user->email_verified_at = null;
         }
 
         $user->save();
 
+        if ($emailChanged) {
+            $user->sendEmailVerificationNotification();
+        }
+
+        $message = $emailChanged
+            ? 'Seus dados foram atualizados. Enviamos um link de confirmação para o novo e-mail.'
+            : 'Seus dados e preferências foram atualizados.';
+
         return redirect()
             ->route('account.index')
-            ->with('success', 'Seus dados e preferências foram atualizados.');
+            ->with('success', $message);
     }
 
     public function updatePassword(Request $request): RedirectResponse

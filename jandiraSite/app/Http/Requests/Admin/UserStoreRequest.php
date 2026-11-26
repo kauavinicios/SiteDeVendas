@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Enums\UserRole;
+use App\Support\EmailValidation;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -21,7 +22,7 @@ class UserStoreRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['required', 'string', 'lowercase', EmailValidation::rule(), 'max:255', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:20'],
             'role' => ['required', 'string', Rule::in(UserRole::staffValues())],
             'password' => ['required', 'confirmed', Password::defaults()],

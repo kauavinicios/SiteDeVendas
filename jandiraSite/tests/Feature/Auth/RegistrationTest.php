@@ -4,7 +4,9 @@ namespace Tests\Feature\Auth;
 
 use App\Enums\UserRole;
 use App\Models\User;
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -52,5 +54,28 @@ class RegistrationTest extends TestCase
 
         $this->assertTrue($user->marketing_opt_in);
         $this->assertNotNull($user->marketing_opt_in_at);
+    }
+
+    public function test_registration_sends_custom_verification_email_and_rejects_invalid_email(): void
+    {
+        Notification::fake();
+
+        $this->post('/register', [
+            'name' => 'Teste Inválido',
+            'email' => 'email-invalido',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])->assertSessionHasErrors('email');
+
+        $this->post('/register', [
+            'name' => 'Ana Costa',
+            'email' => 'ana@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])->assertRedirect(route('home', absolute: false));
+
+        $user = User::where('email', 'ana@example.com')->firstOrFail();
+
+        Notification::assertSentTo($user, VerifyEmailNotification::class);
     }
 }

@@ -3,9 +3,11 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
@@ -24,7 +26,7 @@ class EmailVerificationTest extends TestCase
 
     public function test_email_can_be_verified()
     {
-        $user = User::factory()->unverified()->create();
+        $user = User::factory()->customer()->unverified()->create();
 
         Event::fake();
 
@@ -38,7 +40,45 @@ class EmailVerificationTest extends TestCase
 
         Event::assertDispatched(Verified::class);
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $response
+            ->assertRedirect(route('account.index', absolute: false))
+            ->assertSessionHas('success');
+    }
+
+    public function test_staff_email_verification_redirects_to_dashboard(): void
+    {
+        $user = User::factory()->admin()->unverified()->create();
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $user->id, 'hash' => sha1($user->email)]
+        );
+
+        $response = $this->actingAs($user)->get($verificationUrl);
+
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
         $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+    }
+
+    public function test_verification_notification_can_be_resent_with_custom_template(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->customer()->unverified()->create();
+
+        $this->actingAs($user)
+            ->post('/email/verification-notification')
+            ->assertSessionHas('status', 'verification-link-sent');
+
+        Notification::assertSentTo($user, VerifyEmailNotification::class, function ($notification) use ($user) {
+            $html = (string) $notification->toMail($user)->render();
+
+            $this->assertStringContainsString('Butique da Jandira', $html);
+            $this->assertStringContainsString('Confirmar meu e-mail', $html);
+
+            return true;
+        });
     }
 
     public function test_email_is_not_verified_with_invalid_hash()
