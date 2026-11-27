@@ -56,15 +56,19 @@ Route::get('/carrinho', [CartController::class, 'index'])
     ->name('cart.index');
 
 Route::post('/carrinho', [CartController::class, 'store'])
+    ->middleware('throttle:60,1')
     ->name('cart.store');
 
 Route::patch('/carrinho/{variant}', [CartController::class, 'update'])
+    ->middleware('throttle:60,1')
     ->name('cart.update');
 
 Route::delete('/carrinho/{variant}', [CartController::class, 'destroy'])
+    ->middleware('throttle:60,1')
     ->name('cart.destroy');
 
 Route::delete('/carrinho', [CartController::class, 'clear'])
+    ->middleware('throttle:60,1')
     ->name('cart.clear');
 
 Route::post('/pedidos', [OrderController::class, 'store'])
@@ -97,6 +101,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->name('account.destroy');
 
     Route::post('/favoritos/{product}', [FavoriteController::class, 'toggle'])
+        ->middleware('throttle:30,1')
         ->name('favorites.toggle');
 });
 

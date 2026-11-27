@@ -21,7 +21,7 @@ class CampaignRequest extends FormRequest
             'title' => ['required', 'string', 'max:160'],
             'body' => ['required', 'string', 'max:5000'],
             'cta_label' => ['nullable', 'string', 'max:80'],
-            'cta_url' => ['nullable', 'url', 'max:500', 'required_with:cta_label'],
+            'cta_url' => ['nullable', 'url:http,https', 'max:500', 'required_with:cta_label'],
         ];
     }
 

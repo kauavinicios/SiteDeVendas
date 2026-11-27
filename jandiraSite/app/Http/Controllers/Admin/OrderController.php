@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\PaymentEvent;
 use App\Services\OrderPaymentService;
 use App\Services\Payments\InfinitePayException;
+use App\Support\SearchPattern;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -39,7 +40,7 @@ class OrderController extends Controller
                 'paymentEvents' => fn ($query) => $query->latest()->limit(10),
             ])
             ->when($search !== '', function ($query) use ($search) {
-                $pattern = "%{$search}%";
+                $pattern = SearchPattern::contains($search);
 
                 $query->where(function ($subQuery) use ($pattern) {
                     $subQuery

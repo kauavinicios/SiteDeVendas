@@ -20,8 +20,10 @@ return [
     'decimal' => 'O campo :attribute deve ter :decimal casas decimais.',
     'different' => 'Os campos :attribute e :other devem ser diferentes.',
     'digits' => 'O campo :attribute deve ter :digits dígitos.',
+    'dimensions' => 'A imagem :attribute possui dimensões inválidas.',
     'email' => 'O campo :attribute deve ser um endereço de e-mail válido.',
     'exists' => 'O valor selecionado para :attribute é inválido.',
+    'extensions' => 'O arquivo :attribute deve possuir uma das extensões: :values.',
     'file' => 'O campo :attribute deve ser um arquivo.',
     'filled' => 'O campo :attribute deve estar preenchido.',
     'gt' => [

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ProductImageRequest;
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Support\ImageSanitizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,13 +17,14 @@ class ProductImageController extends Controller
 {
     public function store(
         ProductImageRequest $request,
-        Product $product
+        Product $product,
+        ImageSanitizer $imageSanitizer,
     ): RedirectResponse {
         $files = $request->file('images', []);
         $nextPosition = ((int) $product->images()->max('position')) + 1;
 
         foreach ($files as $file) {
-            $path = $file->store("products/{$product->id}", 'public');
+            $path = $imageSanitizer->storeSanitized($file, "products/{$product->id}", 'public');
 
             $product->images()->create([
                 'path' => $path,

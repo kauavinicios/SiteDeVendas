@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UserStoreRequest;
 use App\Http\Requests\Admin\UserUpdateRequest;
 use App\Models\User;
+use App\Support\SearchPattern;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -33,7 +34,7 @@ class UserController extends Controller
 
         $users = (clone $staffBase)
             ->when($search !== '', function ($query) use ($search) {
-                $pattern = "%{$search}%";
+                $pattern = SearchPattern::contains($search);
 
                 $query->where(function ($subQuery) use ($pattern) {
                     $subQuery

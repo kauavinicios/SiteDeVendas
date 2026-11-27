@@ -20,7 +20,14 @@ class ProductImageRequest extends FormRequest
     {
         return [
             'images' => ['required', 'array', 'min:1', 'max:10'],
-            'images.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'images.*' => [
+                'required',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'extensions:jpg,jpeg,png,webp',
+                'dimensions:max_width=4096,max_height=4096',
+                'max:5120',
+            ],
         ];
     }
 
@@ -34,6 +41,8 @@ class ProductImageRequest extends FormRequest
             'images.max' => 'Você pode enviar no máximo 10 imagens por vez.',
             'images.*.image' => 'Cada arquivo enviado deve ser uma imagem válida.',
             'images.*.mimes' => 'Formatos permitidos: JPG, JPEG, PNG ou WEBP.',
+            'images.*.extensions' => 'Extensões permitidas: JPG, JPEG, PNG ou WEBP.',
+            'images.*.dimensions' => 'Cada imagem pode ter no máximo 4096x4096 pixels.',
             'images.*.max' => 'Cada imagem deve ter no máximo 5 MB.',
         ];
     }

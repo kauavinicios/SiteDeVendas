@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ContactMessage;
+use App\Support\SearchPattern;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,7 +23,7 @@ class ContactMessageController extends Controller
 
         $messages = ContactMessage::query()
             ->when($search !== '', function ($query) use ($search) {
-                $pattern = "%{$search}%";
+                $pattern = SearchPattern::contains($search);
 
                 $query->where(function ($subQuery) use ($pattern) {
                     $subQuery

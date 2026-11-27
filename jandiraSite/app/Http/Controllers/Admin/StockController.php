@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StockUpdateRequest;
 use App\Models\ProductVariant;
 use App\Services\StockAlertService;
+use App\Support\SearchPattern;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,7 +28,7 @@ class StockController extends Controller
         $variants = ProductVariant::query()
             ->with(['product.category'])
             ->when($search !== '', function ($query) use ($search) {
-                $pattern = "%{$search}%";
+                $pattern = SearchPattern::contains($search);
 
                 $query->where(function ($subQuery) use ($pattern) {
                     $subQuery

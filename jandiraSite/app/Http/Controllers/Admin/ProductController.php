@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ProductRequest;
 use App\Models\Category;
 use App\Models\Product;
+use App\Support\SearchPattern;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -29,7 +30,7 @@ class ProductController extends Controller
                 'variants',
             ])
             ->when($search !== '', function ($query) use ($search) {
-                $pattern = "%{$search}%";
+                $pattern = SearchPattern::contains($search);
 
                 $query->where(function ($subQuery) use ($pattern) {
                     $subQuery

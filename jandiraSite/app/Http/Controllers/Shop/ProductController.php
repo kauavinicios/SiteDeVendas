@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Shop;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Support\SearchPattern;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -22,12 +23,18 @@ class ProductController extends Controller
             ->when($request->filled('busca'), function ($query) use ($request) {
                 $busca = trim($request->string('busca')->toString());
 
-                $query->where(function ($query) use ($busca) {
+                if ($busca === '') {
+                    return;
+                }
+
+                $pattern = SearchPattern::contains($busca);
+
+                $query->where(function ($query) use ($pattern) {
                     $query
-                        ->where('name', 'ilike', '%'.$busca.'%')
-                        ->orWhere('description', 'ilike', '%'.$busca.'%')
-                        ->orWhereHas('category', function ($query) use ($busca) {
-                            $query->where('name', 'ilike', '%'.$busca.'%');
+                        ->where('name', 'ilike', $pattern)
+                        ->orWhere('description', 'ilike', $pattern)
+                        ->orWhereHas('category', function ($query) use ($pattern) {
+                            $query->where('name', 'ilike', $pattern);
                         });
                 });
             })
