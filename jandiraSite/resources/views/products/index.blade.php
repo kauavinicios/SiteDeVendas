@@ -167,7 +167,7 @@
                                 Ordenar por
                             </label>
 
-                            <select id="ordenacao" name="ordenacao" class="store-sort-select" onchange="this.form.submit()">
+                            <select id="ordenacao" name="ordenacao" class="store-sort-select" data-auto-submit>
                                 <option value="" {{ !request('ordenacao') ? 'selected' : '' }}>
                                     Mais recentes
                                 </option>

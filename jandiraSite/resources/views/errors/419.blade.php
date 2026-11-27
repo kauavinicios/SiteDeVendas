@@ -6,9 +6,9 @@
 @section('message', 'A página ficou aberta por algum tempo e precisamos renovar seu acesso. Recarregue a página ou volte ao início para continuar.')
 
 @section('actions')
-    <button type="button" onclick="window.location.reload()" class="error-btn-primary">
+    <a href="{{ request()->fullUrl() }}" class="error-btn-primary">
         Tentar novamente
-    </button>
+    </a>
     <a href="{{ url('/') }}" class="error-btn-secondary">
         Voltar para a página inicial
     </a>

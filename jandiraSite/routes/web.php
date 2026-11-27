@@ -130,7 +130,7 @@ if (app()->isLocal()) {
                 'email' => 'maria@exemplo.com',
                 'phone' => '(67) 99999-9999',
                 'subject' => 'Dúvida sobre jogo de cama casal',
-                'message' => "Olá! Gostaria de saber se o jogo de cama em algodão 200 fios está disponível na cor rosê para entrega em Campo Grande.",
+                'message' => 'Olá! Gostaria de saber se o jogo de cama em algodão 200 fios está disponível na cor rosê para entrega em Campo Grande.',
             ]);
             $sample->created_at = now();
 

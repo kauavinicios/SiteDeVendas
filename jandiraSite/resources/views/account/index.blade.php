@@ -447,7 +447,7 @@
                     </p>
 
                     <form action="{{ route('account.destroy') }}" method="POST"
-                        onsubmit="return confirm('Tem certeza que deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita.');"
+                        data-confirm="Tem certeza que deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita."
                         class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
                         @csrf
                         @method('DELETE')

@@ -6,7 +6,7 @@
 @section('message', 'A Butique da Jandira está passando por uma breve manutenção para melhorar sua experiência. Voltamos em instantes!')
 
 @section('actions')
-    <button type="button" onclick="window.location.reload()" class="error-btn-primary">
+    <a href="{{ request()->fullUrl() }}" class="error-btn-primary">
         Atualizar página
-    </button>
+    </a>
 @endsection
