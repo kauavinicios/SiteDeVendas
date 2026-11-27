@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentTransactionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Favorite;
 use App\Models\Order;
+use App\Models\PaymentTransaction;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\StockAlert;
@@ -198,6 +200,8 @@ class AnalyticsController extends Controller
             ])
             ->values();
 
+        $paymentMetrics = $this->buildPaymentMetrics($startDate);
+
         return Inertia::render('admin/analytics/index', [
             'period' => $period,
             'periodLabel' => $periodLabel,
@@ -223,7 +227,157 @@ class AnalyticsController extends Controller
             'topCategories' => $topCategories,
             'mostFavorited' => $mostFavorited,
             'mostRequestedRestock' => $mostRequestedRestock,
+            'paymentMetrics' => $paymentMetrics,
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildPaymentMetrics(CarbonImmutable $startDate): array
+    {
+        $transactions = PaymentTransaction::query()
+            ->where('provider', 'infinitepay')
+            ->where('created_at', '>=', $startDate)
+            ->get();
+
+        $createdLinks = $transactions->count();
+        $paidTransactions = $transactions->filter(fn (PaymentTransaction $tx) => $tx->isPaid());
+        $paidLinks = $paidTransactions->count();
+        $pendingLinks = $transactions->where('status', PaymentTransactionStatus::Pending)->count();
+        $failedOrCancelled = $transactions->filter(
+            fn (PaymentTransaction $tx) => in_array($tx->status, [
+                PaymentTransactionStatus::Failed,
+                PaymentTransactionStatus::Cancelled,
+                PaymentTransactionStatus::Refunded,
+            ], true)
+        )->count();
+
+        $checkoutConversionRate = $createdLinks > 0
+            ? round(($paidLinks / $createdLinks) * 100, 1)
+            : 0.0;
+
+        $paymentDurationsSeconds = [];
+        $expectedPaidCents = 0;
+        $actualPaidCents = 0;
+        $methodAggregates = [];
+        $installmentAggregates = [];
+        $cardPaidCents = 0;
+        $cardInstallmentsSum = 0;
+        $cardTransactionsCount = 0;
+
+        foreach ($paidTransactions as $tx) {
+            if ($tx->created_at !== null && $tx->paid_at !== null && $tx->paid_at->greaterThanOrEqualTo($tx->created_at)) {
+                $paymentDurationsSeconds[] = $tx->paid_at->timestamp - $tx->created_at->timestamp;
+            }
+
+            $expectedCents = (int) $tx->amount_cents;
+            $paidCents = (int) ($tx->paid_amount_cents ?? $tx->amount_cents);
+
+            $expectedPaidCents += $expectedCents;
+            $actualPaidCents += $paidCents;
+
+            $methodKey = filled($tx->capture_method) ? (string) $tx->capture_method : 'other';
+            $methodLabel = match ($methodKey) {
+                'pix' => 'Pix',
+                'credit_card' => 'Cartão de crédito',
+                'debit_card' => 'Cartão de débito',
+                'other' => 'Outro / não informado',
+                default => ucfirst(str_replace('_', ' ', $methodKey)),
+            };
+
+            if (! isset($methodAggregates[$methodKey])) {
+                $methodAggregates[$methodKey] = [
+                    'method' => $methodKey,
+                    'label' => $methodLabel,
+                    'count' => 0,
+                    'revenue_cents' => 0,
+                ];
+            }
+
+            $methodAggregates[$methodKey]['count'] += 1;
+            $methodAggregates[$methodKey]['revenue_cents'] += $paidCents;
+
+            if ($methodKey === 'credit_card') {
+                $installments = max(1, (int) ($tx->installments ?? 1));
+                $cardPaidCents += $paidCents;
+                $cardInstallmentsSum += $installments;
+                $cardTransactionsCount += 1;
+
+                if (! isset($installmentAggregates[$installments])) {
+                    $installmentAggregates[$installments] = [
+                        'installments' => $installments,
+                        'label' => $installments === 1 ? '1x (à vista)' : "{$installments}x",
+                        'count' => 0,
+                        'revenue_cents' => 0,
+                    ];
+                }
+
+                $installmentAggregates[$installments]['count'] += 1;
+                $installmentAggregates[$installments]['revenue_cents'] += $paidCents;
+            }
+        }
+
+        $avgTimeToPayMinutes = count($paymentDurationsSeconds) > 0
+            ? round((array_sum($paymentDurationsSeconds) / count($paymentDurationsSeconds)) / 60, 1)
+            : null;
+
+        $expectedPaidTotal = round($expectedPaidCents / 100, 2);
+        $actualPaidTotal = round($actualPaidCents / 100, 2);
+
+        $captureMethods = collect($methodAggregates)
+            ->sortByDesc('revenue_cents')
+            ->map(function (array $row) use ($paidLinks) {
+                $revenue = round($row['revenue_cents'] / 100, 2);
+                $count = $row['count'];
+
+                return [
+                    'method' => $row['method'],
+                    'label' => $row['label'],
+                    'count' => $count,
+                    'revenue' => $revenue,
+                    'percentage' => $paidLinks > 0 ? round(($count / $paidLinks) * 100, 1) : 0.0,
+                    'average_ticket' => $count > 0 ? round($revenue / $count, 2) : 0.0,
+                ];
+            })
+            ->values();
+
+        ksort($installmentAggregates);
+
+        $installmentsBreakdown = collect($installmentAggregates)
+            ->map(function (array $row) use ($cardPaidCents) {
+                $revenue = round($row['revenue_cents'] / 100, 2);
+
+                return [
+                    'installments' => $row['installments'],
+                    'label' => $row['label'],
+                    'count' => $row['count'],
+                    'revenue' => $revenue,
+                    'percentage' => $cardPaidCents > 0 ? round(($row['revenue_cents'] / $cardPaidCents) * 100, 1) : 0.0,
+                ];
+            })
+            ->values();
+
+        return [
+            'funnel' => [
+                'created_links' => $createdLinks,
+                'paid_links' => $paidLinks,
+                'pending_links' => $pendingLinks,
+                'failed_or_cancelled' => $failedOrCancelled,
+                'checkout_conversion_rate' => $checkoutConversionRate,
+            ],
+            'avg_time_to_pay_minutes' => $avgTimeToPayMinutes,
+            'amounts' => [
+                'expected_paid_total' => $expectedPaidTotal,
+                'actual_paid_total' => $actualPaidTotal,
+                'difference_total' => round($actualPaidTotal - $expectedPaidTotal, 2),
+            ],
+            'average_card_installments' => $cardTransactionsCount > 0
+                ? round($cardInstallmentsSum / $cardTransactionsCount, 1)
+                : null,
+            'capture_methods' => $captureMethods,
+            'installments_breakdown' => $installmentsBreakdown,
+        ];
     }
 
     /**

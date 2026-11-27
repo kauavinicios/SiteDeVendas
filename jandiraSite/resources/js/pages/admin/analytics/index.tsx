@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { AlertCircle, BellRing, DollarSign, Heart, ShoppingBag, TrendingUp } from 'lucide-react';
+import { AlertCircle, BellRing, Clock3, CreditCard, DollarSign, Heart, Layers, ShoppingBag, TrendingUp, Wallet } from 'lucide-react';
 import { useState } from 'react';
 
 type PeriodKey = '7d' | '30d' | '90d' | '365d';
@@ -66,6 +66,46 @@ type RestockDemand = {
     pending_alerts: number;
 };
 
+type PaymentFunnel = {
+    created_links: number;
+    paid_links: number;
+    pending_links: number;
+    failed_or_cancelled: number;
+    checkout_conversion_rate: number;
+};
+
+type PaymentAmounts = {
+    expected_paid_total: number;
+    actual_paid_total: number;
+    difference_total: number;
+};
+
+type CaptureMethodStat = {
+    method: string;
+    label: string;
+    count: number;
+    revenue: number;
+    percentage: number;
+    average_ticket: number;
+};
+
+type InstallmentStat = {
+    installments: number;
+    label: string;
+    count: number;
+    revenue: number;
+    percentage: number;
+};
+
+type PaymentMetrics = {
+    funnel: PaymentFunnel;
+    avg_time_to_pay_minutes: number | null;
+    amounts: PaymentAmounts;
+    average_card_installments: number | null;
+    capture_methods: CaptureMethodStat[];
+    installments_breakdown: InstallmentStat[];
+};
+
 type Props = {
     period: PeriodKey;
     periodLabel: string;
@@ -76,6 +116,7 @@ type Props = {
     topCategories: TopCategory[];
     mostFavorited: FavoriteDemand[];
     mostRequestedRestock: RestockDemand[];
+    paymentMetrics: PaymentMetrics;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -100,6 +141,13 @@ const statusBarColors: Record<string, string> = {
     danger: '#a34c4c',
 };
 
+const captureMethodColors: Record<string, string> = {
+    pix: '#4f7a59',
+    credit_card: '#8b3f59',
+    debit_card: '#2563eb',
+    other: '#74686c',
+};
+
 export default function AnalyticsIndex({
     period,
     periodLabel,
@@ -110,6 +158,7 @@ export default function AnalyticsIndex({
     topCategories,
     mostFavorited,
     mostRequestedRestock,
+    paymentMetrics,
 }: Props) {
     const changePeriod = (nextPeriod: PeriodKey) => {
         router.get(
@@ -209,6 +258,8 @@ export default function AnalyticsIndex({
 
                     <StatusBreakdownCard statusBreakdown={statusBreakdown} totalOrders={kpis.total_orders} />
                 </section>
+
+                <InfinitePayMetricsSection paymentMetrics={paymentMetrics} periodLabel={periodLabel} />
 
                 <section className="grid gap-6 lg:grid-cols-2">
                     <article className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] p-5 shadow-sm md:p-6">
@@ -568,6 +619,183 @@ function EmptyChartState({ message }: { message: string }) {
             <p className="text-xs text-[var(--admin-text-muted)]">{message}</p>
         </div>
     );
+}
+
+function InfinitePayMetricsSection({ paymentMetrics, periodLabel }: { paymentMetrics: PaymentMetrics; periodLabel: string }) {
+    const { funnel, amounts, capture_methods: captureMethods, installments_breakdown: installmentsBreakdown } = paymentMetrics;
+    const maxInstallmentRevenue = Math.max(...installmentsBreakdown.map((item) => item.revenue), 1);
+
+    const amountDifferenceNote =
+        amounts.difference_total !== 0
+            ? `Cobrado: ${formatCurrency(amounts.expected_paid_total)} (${amounts.difference_total > 0 ? '+' : ''}${formatCurrency(amounts.difference_total)})`
+            : `${funnel.paid_links} transação(ões) liquidada(s)`;
+
+    return (
+        <section className="space-y-4">
+            <div>
+                <h2 className="text-lg font-semibold text-[var(--admin-text)]">Desempenho de Pagamentos (InfinitePay)</h2>
+                <p className="mt-0.5 text-xs text-[var(--admin-text-muted)]">
+                    Métricas capturadas dos links e confirmações InfinitePay no período ({periodLabel}).
+                </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <KpiCard
+                    title="Conversão do checkout"
+                    value={`${funnel.checkout_conversion_rate}%`}
+                    description={`${funnel.paid_links} pago(s) de ${funnel.created_links} link(s) gerado(s)`}
+                    icon={CreditCard}
+                />
+
+                <KpiCard
+                    title="Tempo médio até pagar"
+                    value={formatDuration(paymentMetrics.avg_time_to_pay_minutes)}
+                    description="Entre geração do link e confirmação"
+                    icon={Clock3}
+                />
+
+                <KpiCard
+                    title="Volume confirmado InfinitePay"
+                    value={formatCurrency(amounts.actual_paid_total)}
+                    description={amountDifferenceNote}
+                    icon={Wallet}
+                    highlight
+                />
+
+                <KpiCard
+                    title="Parcelamento médio (Cartão)"
+                    value={paymentMetrics.average_card_installments !== null ? `${paymentMetrics.average_card_installments}x` : '—'}
+                    description="Média de parcelas nas vendas no cartão"
+                    icon={Layers}
+                />
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+                <article className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] p-5 shadow-sm md:p-6">
+                    <h3 className="text-base font-semibold text-[var(--admin-text)]">Pix vs Cartão de Crédito</h3>
+                    <p className="mt-1 text-xs text-[var(--admin-text-muted)]">
+                        Distribuição por meio de captura entre transações pagas.
+                    </p>
+
+                    {captureMethods.length > 0 ? (
+                        <>
+                            <div className="mt-5 flex h-3.5 w-full overflow-hidden rounded-full bg-[var(--admin-background-soft)]">
+                                {captureMethods.map((item) => (
+                                    <div
+                                        key={item.method}
+                                        style={{
+                                            width: `${item.percentage}%`,
+                                            backgroundColor: captureMethodColors[item.method] ?? '#74686c',
+                                        }}
+                                        title={`${item.label}: ${item.count} (${item.percentage}%)`}
+                                    />
+                                ))}
+                            </div>
+
+                            <div className="mt-5 space-y-3.5">
+                                {captureMethods.map((item) => (
+                                    <div key={item.method} className="space-y-1">
+                                        <div className="flex items-center justify-between gap-4 text-sm">
+                                            <span className="inline-flex items-center gap-2 font-medium text-[var(--admin-text)]">
+                                                <span
+                                                    className="size-2.5 rounded-full"
+                                                    style={{ backgroundColor: captureMethodColors[item.method] ?? '#74686c' }}
+                                                />
+                                                {item.label}
+                                            </span>
+
+                                            <span className="font-semibold text-[var(--admin-text)]">{formatCurrency(item.revenue)}</span>
+                                        </div>
+
+                                        <div className="flex items-center justify-between text-[11px] text-[var(--admin-text-muted)]">
+                                            <span>
+                                                {item.count} pagamento(s) &bull; {item.percentage}% dos pagos
+                                            </span>
+                                            <span>Ticket médio: {formatCurrency(item.average_ticket)}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    ) : (
+                        <EmptyChartState message="Nenhum pagamento confirmado pela InfinitePay neste período." />
+                    )}
+                </article>
+
+                <article className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] p-5 shadow-sm md:p-6">
+                    <h3 className="text-base font-semibold text-[var(--admin-text)]">Parcelamento no Cartão &amp; Funil</h3>
+                    <p className="mt-1 text-xs text-[var(--admin-text-muted)]">
+                        Preferência de parcelas e status dos links gerados no período.
+                    </p>
+
+                    <div className="mt-4 grid grid-cols-2 gap-2.5 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-background-soft)] p-3 text-xs sm:grid-cols-4">
+                        <div>
+                            <p className="text-[var(--admin-text-muted)]">Links gerados</p>
+                            <p className="mt-0.5 text-sm font-semibold text-[var(--admin-text)]">{funnel.created_links}</p>
+                        </div>
+                        <div>
+                            <p className="text-[var(--admin-text-muted)]">Pagos</p>
+                            <p className="mt-0.5 text-sm font-semibold text-[var(--admin-success)]">{funnel.paid_links}</p>
+                        </div>
+                        <div>
+                            <p className="text-[var(--admin-text-muted)]">Pendentes</p>
+                            <p className="mt-0.5 text-sm font-semibold text-amber-700">{funnel.pending_links}</p>
+                        </div>
+                        <div>
+                            <p className="text-[var(--admin-text-muted)]">Falha/Canc.</p>
+                            <p className="mt-0.5 text-sm font-semibold text-[var(--admin-text)]">{funnel.failed_or_cancelled}</p>
+                        </div>
+                    </div>
+
+                    {installmentsBreakdown.length > 0 ? (
+                        <div className="mt-5 space-y-3.5">
+                            {installmentsBreakdown.map((item) => (
+                                <div key={item.installments} className="space-y-1.5">
+                                    <div className="flex items-center justify-between gap-4 text-sm">
+                                        <span className="font-medium text-[var(--admin-text)]">{item.label}</span>
+                                        <span className="font-semibold text-[var(--admin-text)]">{formatCurrency(item.revenue)}</span>
+                                    </div>
+
+                                    <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--admin-background-soft)]">
+                                        <div
+                                            className="h-full rounded-full bg-[#8b3f59]"
+                                            style={{ width: `${Math.max((item.revenue / maxInstallmentRevenue) * 100, 4)}%` }}
+                                        />
+                                    </div>
+
+                                    <div className="flex justify-between text-[11px] text-[var(--admin-text-muted)]">
+                                        <span>{item.count} compra(s) no cartão</span>
+                                        <span>{item.percentage}% do volume em cartão</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <EmptyChartState message="Nenhuma compra no cartão de crédito confirmada neste período." />
+                    )}
+                </article>
+            </div>
+        </section>
+    );
+}
+
+function formatDuration(minutes: number | null): string {
+    if (minutes === null) {
+        return '—';
+    }
+
+    if (minutes < 1) {
+        return '< 1 min';
+    }
+
+    if (minutes < 60) {
+        return `${Math.round(minutes)} min`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = Math.round(minutes % 60);
+
+    return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}min` : `${hours}h`;
 }
 
 function formatCurrency(value: number): string {
