@@ -52,3 +52,29 @@ jobs:
 
       - name: Lint Frontend (ESLint)
         run: npx eslint .
+
+      - name: TypeScript typecheck
+        run: npx tsc --noEmit
+
+  docker:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: jandiraSite
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Docker Compose (dev & prod)
+        run: |
+          cp .env.example .env
+          echo "DB_PASSWORD=ci_dummy_password_123" >> .env
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml config --quiet
+          SITE_ADDRESS=example.com docker compose -f docker-compose.yml -f docker-compose.prod.yml config --quiet
+
+      - name: Build production PHP image
+        run: docker build -f Dockerfile-php --target production -t jandira-php:ci .
+
+      - name: Build production Caddy image
+        run: docker build -f Dockerfile-caddy --target production -t jandira-caddy:ci .

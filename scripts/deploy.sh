@@ -122,12 +122,13 @@ main() {
         compose_prod build
     fi
 
-    step "[4/7] Subindo containers de produção..."
-    compose_prod up -d --remove-orphans --wait
+    step "[4/7] Subindo banco e PHP-FPM..."
+    compose_prod up -d --wait postgres php
 
-    step "[5/7] Aplicando migrations, cache otimizado e reinício de workers..."
+    step "[5/7] Aplicando migrations, cache otimizado e subindo demais serviços..."
     compose_prod exec -T php php artisan migrate --force --ansi
     compose_prod exec -T php php artisan optimize --ansi
+    compose_prod up -d --remove-orphans --wait
     compose_prod exec -T php php artisan queue:restart --ansi
 
     step "[6/7] Verificando postura de segurança (app:security-check)..."

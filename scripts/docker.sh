@@ -67,30 +67,35 @@ cmd_up() {
     if [[ "$MODE" == "prod" ]]; then
         [[ -f "$ENV_FILE" ]] \
             || fail "jandiraSite/.env não encontrado. Copie .env.production.example para .env e preencha as credenciais."
-    else
-        ensure_dev_env
+
+        step "Subindo stack Docker ($MODE)..."
+        run_compose up -d --build --wait
+        success "Stack de produção no ar! Para deploy completo com backup e migrações use: scripts/deploy.sh"
+        return
     fi
 
-    step "Subindo stack Docker ($MODE)..."
-    run_compose up -d --build --wait
+    ensure_dev_env
 
-    if [[ "$MODE" == "dev" ]]; then
-        if [[ -z "$(env_get APP_KEY "$ENV_FILE")" ]]; then
-            step "Gerando APP_KEY..."
-            run_compose exec -T php php artisan key:generate --ansi
-        fi
-        step "Executando migrations em desenvolvimento..."
-        run_compose exec -T php php artisan migrate --force --ansi
+    step "Subindo banco e PHP-FPM ($MODE)..."
+    run_compose up -d --build --wait postgres php
 
-        local http_port="${DEV_HTTP_PORT:-8080}"
-        success "Stack de desenvolvimento no ar!"
-        info "Loja / Admin : http://127.0.0.1:${http_port}"
-        info "Healthcheck  : http://127.0.0.1:${http_port}/up"
-        if printf '%s\n' "${PROFILES[*]:-}" | grep -q "mail"; then
-            info "Mailpit UI   : http://127.0.0.1:${MAILPIT_UI_PORT:-8025}"
-        fi
-    else
-        success "Stack de produção no ar! Para deploy completo com backup e migrações use: scripts/deploy.sh"
+    if [[ -z "$(env_get APP_KEY "$ENV_FILE")" ]]; then
+        step "Gerando APP_KEY..."
+        run_compose exec -T php php artisan key:generate --ansi
+    fi
+
+    step "Executando migrations em desenvolvimento..."
+    run_compose exec -T php php artisan migrate --force --ansi
+
+    step "Subindo worker, scheduler e Caddy ($MODE)..."
+    run_compose up -d --remove-orphans --wait
+
+    local http_port="${DEV_HTTP_PORT:-8080}"
+    success "Stack de desenvolvimento no ar!"
+    info "Loja / Admin : http://127.0.0.1:${http_port}"
+    info "Healthcheck  : http://127.0.0.1:${http_port}/up"
+    if printf '%s\n' "${PROFILES[*]:-}" | grep -q "mail"; then
+        info "Mailpit UI   : http://127.0.0.1:${MAILPIT_UI_PORT:-8025}"
     fi
 }
 
