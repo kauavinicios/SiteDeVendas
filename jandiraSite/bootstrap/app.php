@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/infinitepay/*',
+        ]);
+
         $middleware->alias([
             'active' => EnsureUserIsActive::class,
             'staff' => EnsureUserIsStaff::class,

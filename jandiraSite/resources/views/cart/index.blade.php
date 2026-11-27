@@ -284,8 +284,12 @@
                                 data-order-url="{{ route('orders.store') }}"
                                 data-cart-checkout
                             >
-                                Finalizar pedido pelo WhatsApp
+                                Finalizar e pagar com InfinitePay
                             </button>
+
+                            <p class="text-[11px] leading-relaxed text-[var(--color-text-muted)]">
+                                Pagamento seguro via Pix ou cartão de crédito pela InfinitePay. Não armazenamos dados do seu cartão.
+                            </p>
                         </form>
 
                         <a href="{{ route('products.index') }}" class="store-cart-continue">
@@ -305,18 +309,26 @@
                 </h2>
 
                 <p class="mx-auto mt-2 max-w-md text-sm text-[var(--color-text-muted)]">
-                    Guarde o código do seu pedido. Se a janela do WhatsApp não abrir automaticamente, clique no botão abaixo para enviar o pedido à nossa equipe.
+                    Estamos redirecionando você para o ambiente seguro da InfinitePay. Caso não abra automaticamente, clique no botão abaixo.
                 </p>
 
                 <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
                     <a
                         href="#"
+                        class="store-button-primary hidden"
+                        data-order-checkout-link
+                    >
+                        Ir para o pagamento InfinitePay
+                    </a>
+
+                    <a
+                        href="#"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="store-button-primary hidden"
+                        class="store-button-secondary hidden"
                         data-order-whatsapp-link
                     >
-                        Abrir atendimento no WhatsApp
+                        Tirar dúvidas no WhatsApp
                     </a>
 
                     @auth

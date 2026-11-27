@@ -6,7 +6,7 @@ import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { CheckCircle2, Clock3, DollarSign, Eye, Search, ShoppingBag } from 'lucide-react';
+import { CheckCircle2, Clock3, CreditCard, DollarSign, ExternalLink, Eye, RefreshCw, Search, ShoppingBag } from 'lucide-react';
 import { FormEventHandler, useEffect, useState } from 'react';
 
 type OrderItemEntry = {
@@ -17,6 +17,38 @@ type OrderItemEntry = {
     unit_price: number;
     quantity: number;
     subtotal: number;
+};
+
+type PaymentTransactionSummary = {
+    id: number;
+    provider: string;
+    driver: string;
+    auth_mode: string;
+    status: string;
+    status_label: string;
+    status_tone: string;
+    slug: string | null;
+    transaction_nsu: string | null;
+    capture_method: string | null;
+    capture_method_label: string | null;
+    installments: number | null;
+    amount: number;
+    paid_amount: number | null;
+    checkout_url: string | null;
+    receipt_url: string | null;
+    paid_at: string | null;
+    last_checked_at: string | null;
+};
+
+type PaymentEventEntry = {
+    id: number;
+    source: string;
+    source_label: string;
+    event_type: string;
+    event_label: string;
+    external_event_id: string | null;
+    notes: string | null;
+    created_at: string | null;
 };
 
 type OrderEntry = {
@@ -30,6 +62,7 @@ type OrderEntry = {
     status_tone: string;
     channel: string;
     payment_method: string | null;
+    payment_method_label: string | null;
     payment_status: string;
     total: number;
     total_cost: number | null;
@@ -38,6 +71,8 @@ type OrderEntry = {
     notes: string | null;
     stock_deducted: boolean;
     created_at: string | null;
+    payment_transaction: PaymentTransactionSummary | null;
+    payment_events: PaymentEventEntry[];
     items: OrderItemEntry[];
 };
 
@@ -114,7 +149,10 @@ export default function OrdersIndex({ orders, stats, statusOptions, filters, can
     const canManageOrders = can('manage-orders');
 
     const [search, setSearch] = useState(filters.busca);
-    const [selectedOrder, setSelectedOrder] = useState<OrderEntry | null>(null);
+    const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+    const [verifyingOrderId, setVerifyingOrderId] = useState<number | null>(null);
+
+    const selectedOrder = selectedOrderId !== null ? (orders.data.find((order) => order.id === selectedOrderId) ?? null) : null;
 
     const { data, setData, patch, processing, errors, clearErrors } = useForm({
         status: 'pending',
@@ -159,7 +197,7 @@ export default function OrdersIndex({ orders, stats, statusOptions, filters, can
             payment_method: order.payment_method ?? '',
             notes: order.notes ?? '',
         });
-        setSelectedOrder(order);
+        setSelectedOrderId(order.id);
     };
 
     const submitOrderUpdate: FormEventHandler = (e) => {
@@ -172,9 +210,38 @@ export default function OrdersIndex({ orders, stats, statusOptions, filters, can
         patch(route('admin.orders.update-status', selectedOrder.id), {
             preserveScroll: true,
             onSuccess: () => {
-                setSelectedOrder(null);
+                setSelectedOrderId(null);
             },
         });
+    };
+
+    const handleVerifyPayment = (order: OrderEntry) => {
+        if (!canManageOrders || verifyingOrderId === order.id) {
+            return;
+        }
+
+        router.post(
+            route('admin.orders.verify-payment', order.id),
+            {},
+            {
+                preserveScroll: true,
+                onStart: () => setVerifyingOrderId(order.id),
+                onSuccess: (page) => {
+                    const nextOrders = (page.props as unknown as Props).orders?.data ?? [];
+                    const updated = nextOrders.find((entry) => entry.id === order.id);
+
+                    if (updated) {
+                        setData({
+                            status: updated.status,
+                            payment_status: updated.payment_status ?? 'pending',
+                            payment_method: updated.payment_method ?? '',
+                            notes: updated.notes ?? '',
+                        });
+                    }
+                },
+                onFinish: () => setVerifyingOrderId(null),
+            },
+        );
     };
 
     return (
@@ -186,7 +253,7 @@ export default function OrdersIndex({ orders, stats, statusOptions, filters, can
                     <h1 className="text-2xl font-semibold text-[var(--admin-text)]">Pedidos</h1>
 
                     <p className="mt-1 text-sm text-[var(--admin-text-muted)]">
-                        Acompanhe os pedidos recebidos pelo WhatsApp. Ao confirmar um pedido, o estoque é baixado automaticamente.
+                        Acompanhe os pedidos da InfinitePay e do WhatsApp. A confirmação de pagamento ou mudança de status atualiza o estoque automaticamente.
                     </p>
                 </section>
 
@@ -322,9 +389,17 @@ export default function OrdersIndex({ orders, stats, statusOptions, filters, can
                                                 <p className="text-xs font-medium text-[var(--admin-text)]">
                                                     {paymentStatusLabels[order.payment_status] ?? order.payment_status}
                                                 </p>
-                                                {order.payment_method && (
-                                                    <p className="mt-0.5 text-[11px] text-[var(--admin-text-muted)]">{order.payment_method}</p>
+                                                {order.payment_method_label && (
+                                                    <p className="mt-0.5 text-[11px] text-[var(--admin-text-muted)]">
+                                                        {order.payment_method_label}
+                                                        {order.payment_transaction?.installments && order.payment_transaction.installments > 1
+                                                            ? ` (${order.payment_transaction.installments}x)`
+                                                            : ''}
+                                                    </p>
                                                 )}
+                                                <span className="mt-1 inline-flex rounded-full bg-[var(--admin-background-soft)] px-2 py-0.5 text-[10px] font-medium text-[var(--admin-text-muted)]">
+                                                    {order.channel === 'infinitepay' ? 'InfinitePay' : 'WhatsApp'}
+                                                </span>
                                             </TableCell>
 
                                             <TableCell>
@@ -405,7 +480,7 @@ export default function OrdersIndex({ orders, stats, statusOptions, filters, can
                 </section>
             </main>
 
-            <Dialog open={selectedOrder !== null} onOpenChange={(open) => !open && setSelectedOrder(null)}>
+            <Dialog open={selectedOrder !== null} onOpenChange={(open) => !open && setSelectedOrderId(null)}>
                 <DialogContent className="max-h-[90vh] overflow-y-auto border-[var(--admin-border)] bg-[var(--admin-surface)] sm:max-w-2xl">
                     {selectedOrder && (
                         <>
@@ -453,6 +528,162 @@ export default function OrdersIndex({ orders, stats, statusOptions, filters, can
                                         </div>
                                     )}
                                 </div>
+
+                                {selectedOrder.payment_transaction && (
+                                    <div className="rounded-xl border border-[var(--admin-border)] bg-[var(--admin-background)] p-4">
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <CreditCard className="size-4 text-[var(--admin-primary)]" />
+                                                <h3 className="text-xs font-semibold tracking-wide text-[var(--admin-text-muted)] uppercase">
+                                                    Pagamento InfinitePay
+                                                </h3>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <span className="rounded-full bg-[var(--admin-background-soft)] px-2 py-0.5 text-[10px] font-medium text-[var(--admin-text-muted)]">
+                                                    {selectedOrder.payment_transaction.driver} / {selectedOrder.payment_transaction.auth_mode}
+                                                </span>
+
+                                                <span
+                                                    className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                                        toneClasses[selectedOrder.payment_transaction.status_tone] ??
+                                                        'bg-neutral-100 text-neutral-700'
+                                                    }`}
+                                                >
+                                                    {selectedOrder.payment_transaction.status_label}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <dl className="mt-3 grid gap-3 text-xs sm:grid-cols-2">
+                                            <div>
+                                                <dt className="text-[var(--admin-text-muted)]">Forma &amp; parcelas</dt>
+                                                <dd className="mt-0.5 font-medium text-[var(--admin-text)]">
+                                                    {selectedOrder.payment_transaction.capture_method_label ?? 'Ainda não escolhido'}
+                                                    {selectedOrder.payment_transaction.installments &&
+                                                    selectedOrder.payment_transaction.installments > 1
+                                                        ? ` (${selectedOrder.payment_transaction.installments}x)`
+                                                        : ''}
+                                                </dd>
+                                            </div>
+
+                                            <div>
+                                                <dt className="text-[var(--admin-text-muted)]">Valor cobrado / pago</dt>
+                                                <dd className="mt-0.5 font-medium text-[var(--admin-text)]">
+                                                    {formatCurrency(selectedOrder.payment_transaction.amount)}
+                                                    {selectedOrder.payment_transaction.paid_amount !== null
+                                                        ? ` • Pago: ${formatCurrency(selectedOrder.payment_transaction.paid_amount)}`
+                                                        : ''}
+                                                </dd>
+                                            </div>
+
+                                            <div>
+                                                <dt className="text-[var(--admin-text-muted)]">Slug</dt>
+                                                <dd className="mt-0.5 font-mono text-[11px] break-all text-[var(--admin-text)]">
+                                                    {selectedOrder.payment_transaction.slug ?? '—'}
+                                                </dd>
+                                            </div>
+
+                                            <div>
+                                                <dt className="text-[var(--admin-text-muted)]">Transaction NSU</dt>
+                                                <dd className="mt-0.5 font-mono text-[11px] break-all text-[var(--admin-text)]">
+                                                    {selectedOrder.payment_transaction.transaction_nsu ?? '—'}
+                                                </dd>
+                                            </div>
+
+                                            <div>
+                                                <dt className="text-[var(--admin-text-muted)]">Pago em</dt>
+                                                <dd className="mt-0.5 font-medium text-[var(--admin-text)]">
+                                                    {selectedOrder.payment_transaction.paid_at ?? '—'}
+                                                </dd>
+                                            </div>
+
+                                            <div>
+                                                <dt className="text-[var(--admin-text-muted)]">Última consulta API</dt>
+                                                <dd className="mt-0.5 font-medium text-[var(--admin-text)]">
+                                                    {selectedOrder.payment_transaction.last_checked_at ?? '—'}
+                                                </dd>
+                                            </div>
+                                        </dl>
+
+                                        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[var(--admin-border)] pt-3">
+                                            {canManageOrders && (
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    disabled={verifyingOrderId === selectedOrder.id}
+                                                    onClick={() => handleVerifyPayment(selectedOrder)}
+                                                    className="h-9 rounded-xl border-[var(--admin-border)] px-3 text-xs font-semibold"
+                                                >
+                                                    <RefreshCw
+                                                        className={`mr-1.5 size-3.5 ${verifyingOrderId === selectedOrder.id ? 'animate-spin' : ''}`}
+                                                    />
+                                                    {verifyingOrderId === selectedOrder.id ? 'Consultando...' : 'Verificar na InfinitePay'}
+                                                </Button>
+                                            )}
+
+                                            {selectedOrder.payment_transaction.receipt_url && (
+                                                <a
+                                                    href={selectedOrder.payment_transaction.receipt_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--admin-border)] px-3 text-xs font-semibold text-[var(--admin-primary)] transition-colors hover:bg-[var(--admin-background-soft)]"
+                                                >
+                                                    <ExternalLink className="size-3.5" />
+                                                    Abrir comprovante
+                                                </a>
+                                            )}
+
+                                            {selectedOrder.payment_transaction.status !== 'paid' &&
+                                                selectedOrder.payment_transaction.checkout_url && (
+                                                    <a
+                                                        href={selectedOrder.payment_transaction.checkout_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--admin-border)] px-3 text-xs font-medium text-[var(--admin-text-muted)] transition-colors hover:bg-[var(--admin-background-soft)] hover:text-[var(--admin-text)]"
+                                                    >
+                                                        <ExternalLink className="size-3.5" />
+                                                        Abrir link de checkout
+                                                    </a>
+                                                )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {selectedOrder.payment_events.length > 0 && (
+                                    <div className="rounded-xl border border-[var(--admin-border)] bg-[var(--admin-background)] p-4">
+                                        <h3 className="text-xs font-semibold tracking-wide text-[var(--admin-text-muted)] uppercase">
+                                            Linha do tempo de eventos
+                                        </h3>
+
+                                        <ul className="mt-3 space-y-2.5 text-xs">
+                                            {selectedOrder.payment_events.map((event) => (
+                                                <li
+                                                    key={event.id}
+                                                    className="flex flex-col gap-1 border-l-2 border-[var(--admin-border)] pl-3"
+                                                >
+                                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                                        <span className="font-semibold text-[var(--admin-text)]">{event.event_label}</span>
+                                                        <span className="text-[11px] text-[var(--admin-text-muted)]">{event.created_at ?? '—'}</span>
+                                                    </div>
+
+                                                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-[var(--admin-text-muted)]">
+                                                        <span>Origem: {event.source_label}</span>
+                                                        {event.external_event_id && (
+                                                            <span className="font-mono">&bull; Ref: {event.external_event_id}</span>
+                                                        )}
+                                                    </div>
+
+                                                    {event.notes && (
+                                                        <p className="rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-800">
+                                                            {event.notes}
+                                                        </p>
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
 
                                 <form onSubmit={submitOrderUpdate} className="space-y-4">
                                     <div className="grid gap-4 sm:grid-cols-2">
@@ -522,7 +753,7 @@ export default function OrdersIndex({ orders, stats, statusOptions, filters, can
                                         <Button
                                             type="button"
                                             variant="outline"
-                                            onClick={() => setSelectedOrder(null)}
+                                            onClick={() => setSelectedOrderId(null)}
                                             className="h-10 rounded-xl border-[var(--admin-border)]"
                                         >
                                             Fechar

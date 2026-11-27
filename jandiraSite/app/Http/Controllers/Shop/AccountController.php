@@ -20,7 +20,7 @@ class AccountController extends Controller
         $user = $request->user();
 
         $orders = $user->orders()
-            ->with('items')
+            ->with(['items', 'latestPaymentTransaction'])
             ->latest()
             ->take(20)
             ->get();

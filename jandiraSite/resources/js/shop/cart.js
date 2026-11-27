@@ -483,7 +483,7 @@ function formatCurrency(value) {
 }
 
 /* =========================================================
-   CHECKOUT WHATSAPP COM REGISTRO DE PEDIDO
+   CHECKOUT INTEGRADO INFINITEPAY COM REGISTRO DE PEDIDO
    ========================================================= */
 
 async function submitOrderCheckout(checkoutForm) {
@@ -513,7 +513,7 @@ async function submitOrderCheckout(checkoutForm) {
 
     const originalText = checkoutButton.textContent;
     checkoutButton.disabled = true;
-    checkoutButton.textContent = 'Registrando pedido...';
+    checkoutButton.textContent = 'Preparando pagamento...';
 
     try {
         const response = await fetch(orderUrl, {
@@ -538,10 +538,10 @@ async function submitOrderCheckout(checkoutForm) {
             total: 0,
         });
 
-        showOrderConfirmation(data.order, data.whatsapp_url);
+        showOrderConfirmation(data.order, data.checkout_url, data.whatsapp_url);
 
-        if (data.whatsapp_url) {
-            window.open(data.whatsapp_url, '_blank', 'noopener,noreferrer');
+        if (data.checkout_url) {
+            window.location.assign(data.checkout_url);
         }
     } catch (error) {
         showCartMessage(error.message, 'error');
@@ -551,11 +551,12 @@ async function submitOrderCheckout(checkoutForm) {
     }
 }
 
-function showOrderConfirmation(order, whatsappUrl) {
+function showOrderConfirmation(order, checkoutUrl, whatsappUrl) {
     const cartContent = document.querySelector('[data-cart-content]');
     const emptyCart = document.querySelector('[data-cart-empty]');
     const confirmation = document.querySelector('[data-order-confirmation]');
     const codeElement = document.querySelector('[data-order-code]');
+    const checkoutLink = document.querySelector('[data-order-checkout-link]');
     const whatsappLink = document.querySelector('[data-order-whatsapp-link]');
 
     if (cartContent) {
@@ -568,6 +569,15 @@ function showOrderConfirmation(order, whatsappUrl) {
 
     if (codeElement && order?.code) {
         codeElement.textContent = `#${order.code}`;
+    }
+
+    if (checkoutLink) {
+        if (checkoutUrl) {
+            checkoutLink.href = checkoutUrl;
+            checkoutLink.classList.remove('hidden');
+        } else {
+            checkoutLink.classList.add('hidden');
+        }
     }
 
     if (whatsappLink) {

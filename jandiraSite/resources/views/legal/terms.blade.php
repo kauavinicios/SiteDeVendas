@@ -25,7 +25,8 @@
                     </h2>
                     <p class="mt-2">
                         A <strong>Butique da Jandira — Casa &amp; Perfumaria</strong> disponibiliza seu catálogo online para consulta de produtos,
-                        gerenciamento de conta do cliente, montagem de carrinho e solicitação de pedidos com atendimento personalizado via WhatsApp.
+                        gerenciamento de conta do cliente, montagem de carrinho, realização de pedidos e pagamento online via Checkout Integrado da InfinitePay,
+                        além de atendimento personalizado pelo WhatsApp e página de Contato.
                     </p>
                 </div>
 
@@ -41,12 +42,14 @@
 
                 <div>
                     <h2 class="text-base font-semibold text-[var(--color-text)]">
-                        3. Pedidos, disponibilidade e pagamentos
+                        3. Pedidos, disponibilidade e pagamentos online
                     </h2>
                     <p class="mt-2">
-                        Atualmente, os pedidos montados no carrinho são encaminhados para atendimento via <strong>WhatsApp</strong>, onde confirmamos
-                        disponibilidade final de estoque, prazo de entrega em Campo Grande - MS (ou envio) e a forma de pagamento combinada diretamente com nossa equipe.
-                        O site não solicita nem armazena números de cartão de crédito ou dados bancários.
+                        Os pedidos montados no carrinho são finalizados em ambiente seguro de pagamento da plataforma <strong>InfinitePay</strong>,
+                        com suporte a <strong>Pix</strong> e <strong>cartão de crédito</strong> conforme as opções exibidas no checkout.
+                        A confirmação do pedido e a baixa do estoque acontecem após a validação oficial do pagamento junto à plataforma.
+                        O site da Butique da Jandira não solicita nem armazena números de cartão de crédito ou códigos de segurança (CVV);
+                        dúvidas sobre entrega em Campo Grande - MS ou retirada podem ser alinhadas diretamente com nossa equipe via WhatsApp ou página de Contato.
                     </p>
                 </div>
 

@@ -36,7 +36,8 @@
                     <ul class="mt-2 list-disc space-y-1.5 pl-5">
                         <li><strong>Dados de cadastro:</strong> nome completo, e-mail, telefone/WhatsApp (opcional) e senha armazenada de forma criptografada (hash).</li>
                         <li><strong>Preferências e aceites:</strong> data e versão de aceite dos Termos de Uso e da Política de Privacidade, confirmação de e-mail e escolha sobre receber ou não novidades promocionais.</li>
-                        <li><strong>Dados de compras e interesses:</strong> quando disponíveis na loja, histórico de pedidos realizados, produtos favoritados e alertas solicitados para aviso de retorno ao estoque.</li>
+                        <li><strong>Dados de compras e interesses:</strong> histórico de pedidos realizados, produtos favoritados, alertas solicitados para aviso de retorno ao estoque e mensagens enviadas pela página de Contato.</li>
+                        <li><strong>Metadados de pagamento:</strong> código do pedido, identificador da transação junto à InfinitePay, status do pagamento, meio utilizado (Pix ou cartão de crédito), quantidade de parcelas, valor pago, data/hora da confirmação e link do comprovante oficial.</li>
                     </ul>
                 </div>
 
@@ -45,8 +46,8 @@
                         3. Quais dados NÃO armazenamos
                     </h2>
                     <p class="mt-2">
-                        <strong>Não coletamos nem armazenamos</strong> números de cartão de crédito, códigos de segurança (CVV), senhas bancárias ou dados sensíveis de pagamento.
-                        Todo pagamento combinado pelo WhatsApp ocorre fora do banco de dados da loja. Quando uma plataforma de pagamento homologada for integrada no futuro, esta política será atualizada antes de entrar em operação.
+                        <strong>Não coletamos nem armazenamos</strong> números de cartão de crédito, códigos de segurança (CVV), senhas bancárias ou chaves de acesso financeiras.
+                        A digitação dos dados do cartão ou a leitura do código Pix ocorrem diretamente no ambiente seguro da plataforma de pagamentos <strong>InfinitePay</strong>.
                     </p>
                 </div>
 
@@ -56,7 +57,7 @@
                     </h2>
                     <ul class="mt-2 list-disc space-y-1.5 pl-5">
                         <li>Identificar sua conta, proteger seu acesso e possibilitar a recuperação de senha;</li>
-                        <li>Registrar e acompanhar seus pedidos e facilitar o atendimento pelo WhatsApp;</li>
+                        <li>Registrar seus pedidos, gerar o checkout de pagamento, validar a confirmação da compra, exibir comprovantes e viabilizar a entrega ou atendimento pelo WhatsApp;</li>
                         <li>Enviar novidades, promoções e avisos de estoque <strong>somente</strong> quando você autorizar expressamente (podendo cancelar a qualquer momento);</li>
                         <li>Cumprir obrigações legais, fiscais e contábeis previstas em lei.</li>
                     </ul>
@@ -82,6 +83,9 @@
                     </h2>
                     <p class="mt-2">
                         A Butique da Jandira não vende nem compartilha suas informações pessoais com terceiros para fins publicitários externos.
+                        Para viabilizar o processamento dos pagamentos online (execução do contrato de compra — Art. 7º, V da LGPD),
+                        dados estritamente necessários do pedido (como nome, e-mail, telefone e itens adquiridos) são transmitidos à plataforma
+                        <strong>InfinitePay (CloudWalk)</strong> no momento do redirecionamento ao checkout seguro.
                     </p>
                 </div>
 

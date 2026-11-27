@@ -340,6 +340,14 @@
                                     'primary' => 'bg-[var(--color-surface-soft)] text-[var(--color-primary)]',
                                     default => 'bg-amber-50 text-amber-800',
                                 };
+
+                                $tx = $order->latestPaymentTransaction;
+                                $methodLabel = $tx?->captureMethodLabel() ?? match ($order->payment_method) {
+                                    'pix' => 'Pix',
+                                    'credit_card' => 'Cartão de crédito',
+                                    'debit_card' => 'Cartão de débito',
+                                    default => $order->payment_method,
+                                };
                             @endphp
 
                             <article class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4">
@@ -363,6 +371,50 @@
                                         </strong>
                                     </div>
                                 </div>
+
+                                @if ($tx || $methodLabel)
+                                    <div class="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[var(--color-page-soft)] px-3 py-2 text-xs text-[var(--color-text-muted)]">
+                                        <div>
+                                            @if ($methodLabel)
+                                                <span>
+                                                    Pagamento: <strong class="text-[var(--color-text)]">{{ $methodLabel }}</strong>
+                                                    @if ($tx?->installments && $tx->installments > 1)
+                                                        <span>({{ $tx->installments }}x)</span>
+                                                    @endif
+                                                </span>
+                                            @else
+                                                <span>
+                                                    Pagamento: <strong class="text-[var(--color-text)]">Aguardando pagamento</strong>
+                                                </span>
+                                            @endif
+
+                                            @if ($tx?->paid_at)
+                                                <span class="ml-2 text-[var(--color-success)]">
+                                                    &bull; Pago em {{ $tx->paid_at->format('d/m/Y H:i') }}
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                        <div class="flex flex-wrap items-center gap-3">
+                                            @if ($tx && $tx->isPaid() && $tx->receipt_url)
+                                                <a href="{{ $tx->receipt_url }}" target="_blank" rel="noopener noreferrer"
+                                                    class="font-semibold text-[var(--color-primary)] hover:underline">
+                                                    Ver comprovante oficial
+                                                </a>
+                                            @elseif ($tx && ! $tx->isPaid() && $order->status === \App\Enums\OrderStatus::Pending && $tx->checkout_url)
+                                                <a href="{{ $tx->checkout_url }}"
+                                                    class="font-semibold text-[var(--color-primary)] hover:underline">
+                                                    Retomar pagamento na InfinitePay
+                                                </a>
+
+                                                <a href="{{ route('checkout.return', ['order_nsu' => $tx->order_nsu, 'slug' => $tx->slug]) }}"
+                                                    class="font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:underline">
+                                                    Verificar status
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endif
 
                                 <ul class="mt-3 space-y-1 border-t border-[var(--color-border)] pt-3 text-xs text-[var(--color-text-muted)]">
                                     @foreach ($order->items as $item)

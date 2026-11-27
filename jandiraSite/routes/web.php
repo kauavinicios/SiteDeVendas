@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Dev\MockInfinitePayController;
 use App\Http\Controllers\Shop\AccountController;
 use App\Http\Controllers\Shop\CartController;
+use App\Http\Controllers\Shop\CheckoutReturnController;
 use App\Http\Controllers\Shop\ContactController;
 use App\Http\Controllers\Shop\FavoriteController;
 use App\Http\Controllers\Shop\HomeController;
@@ -11,6 +13,7 @@ use App\Http\Controllers\Shop\OrderController;
 use App\Http\Controllers\Shop\PageController;
 use App\Http\Controllers\Shop\ProductController;
 use App\Http\Controllers\Shop\StockAlertController;
+use App\Http\Controllers\Webhooks\InfinitePayWebhookController;
 use App\Models\ContactMessage;
 use Illuminate\Support\Facades\Route;
 
@@ -67,6 +70,12 @@ Route::delete('/carrinho', [CartController::class, 'clear'])
 Route::post('/pedidos', [OrderController::class, 'store'])
     ->middleware('throttle:15,1')
     ->name('orders.store');
+
+Route::get('/checkout/retorno', CheckoutReturnController::class)
+    ->name('checkout.return');
+
+Route::post('/webhooks/infinitepay/{secret}', InfinitePayWebhookController::class)
+    ->name('webhooks.infinitepay');
 
 Route::post('/alertas-estoque', [StockAlertController::class, 'store'])
     ->middleware('throttle:15,1')
@@ -131,6 +140,19 @@ if (app()->isLocal()) {
                 'actionUrl' => url('/admin/mensagens'),
             ]);
         });
+    });
+}
+
+if (app()->environment(['local', 'testing'])) {
+    Route::prefix('dev/infinitepay')->name('dev.infinitepay.')->group(function () {
+        Route::get('/checkout/{slug}', [MockInfinitePayController::class, 'show'])
+            ->name('checkout');
+
+        Route::post('/checkout/{slug}/simulate', [MockInfinitePayController::class, 'simulate'])
+            ->name('simulate');
+
+        Route::get('/recibo/{slug}', [MockInfinitePayController::class, 'receipt'])
+            ->name('receipt');
     });
 }
 

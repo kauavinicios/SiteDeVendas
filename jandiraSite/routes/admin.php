@@ -152,6 +152,10 @@ Route::middleware(['auth', 'active', 'staff'])
                 ->middleware('can:'.Permission::ManageOrders->value)
                 ->name('orders.update-status');
 
+            Route::post('/pedidos/{order}/verificar-pagamento', [OrderController::class, 'verifyPayment'])
+                ->middleware('can:'.Permission::ManageOrders->value)
+                ->name('orders.verify-payment');
+
             // /admin/relatorios — estatísticas de vendas, demanda e estimativa de lucros
             Route::get('/relatorios', [AnalyticsController::class, 'index'])
                 ->middleware('can:'.Permission::ViewFinancialReports->value)

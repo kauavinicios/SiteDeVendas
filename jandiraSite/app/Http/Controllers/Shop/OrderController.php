@@ -7,17 +7,25 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Services\CartService;
+use App\Services\InfinitePayService;
+use App\Services\OrderPaymentService;
+use App\Services\Payments\InfinitePayException;
 use App\Support\EmailValidation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
-    public function store(Request $request, CartService $cart): JsonResponse
-    {
+    public function store(
+        Request $request,
+        CartService $cart,
+        OrderPaymentService $orderPaymentService,
+        InfinitePayService $infinitePay,
+    ): JsonResponse {
         if ($request->has('customer_email')) {
             $email = Str::lower(trim((string) $request->input('customer_email')));
             $request->merge([
@@ -108,7 +116,7 @@ class OrderController extends Controller
                 'customer_email' => $validated['customer_email'] ?? null,
                 'customer_phone' => trim($validated['customer_phone']),
                 'status' => OrderStatus::Pending,
-                'channel' => 'whatsapp',
+                'channel' => 'infinitepay',
                 'payment_method' => null,
                 'payment_status' => 'pending',
                 'payment_reference' => null,
@@ -123,15 +131,51 @@ class OrderController extends Controller
             return $order->load('items');
         });
 
+        $redirectUrl = route('checkout.return');
+        $webhookSecret = $infinitePay->webhookSecret();
+        $webhookUrl = $webhookSecret !== ''
+            ? route('webhooks.infinitepay', ['secret' => $webhookSecret])
+            : null;
+
+        try {
+            $transaction = $orderPaymentService->initiateInfinitePayCheckout(
+                order: $order,
+                redirectUrl: $redirectUrl,
+                webhookUrl: $webhookUrl,
+            );
+        } catch (InfinitePayException $exception) {
+            Log::warning('Falha ao iniciar checkout InfinitePay', [
+                'order_id' => $order->id,
+                'order_code' => $order->code,
+                'http_status' => $exception->httpStatus,
+                'message' => $exception->getMessage(),
+                'response' => $exception->responseBody,
+            ]);
+
+            $order->delete();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Não foi possível iniciar o pagamento pela InfinitePay no momento. Tente novamente em instantes.',
+            ], 502);
+        }
+
         $cart->clear();
 
         return response()->json([
             'success' => true,
-            'message' => "Pedido {$order->code} registrado com sucesso!",
+            'message' => "Pedido {$order->code} registrado! Redirecionando para o pagamento seguro...",
             'order' => [
                 'code' => $order->code,
                 'total' => (float) $order->total,
                 'status_label' => $order->status->label(),
+            ],
+            'checkout_url' => $transaction->checkout_url,
+            'payment' => [
+                'provider' => $transaction->provider,
+                'driver' => $transaction->driver,
+                'slug' => $transaction->slug,
+                'status' => $transaction->status->value,
             ],
             'whatsapp_url' => $this->buildWhatsAppUrl($order),
         ], 201);
