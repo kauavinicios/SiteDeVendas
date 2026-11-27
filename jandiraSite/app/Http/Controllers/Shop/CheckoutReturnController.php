@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PaymentTransaction;
 use App\Services\OrderPaymentService;
 use App\Services\Payments\InfinitePayException;
+use App\Support\SecurityAudit;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -25,6 +26,12 @@ class CheckoutReturnController extends Controller
         );
 
         if ($transaction === null || ! $this->canAccessTransaction($request, $transaction)) {
+            if ($transaction !== null) {
+                SecurityAudit::record('checkout.return_unauthorized', [
+                    'transaction_id' => $transaction->id,
+                ], 'warning');
+            }
+
             return view('checkout.return', [
                 'transaction' => null,
                 'order' => null,

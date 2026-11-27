@@ -71,7 +71,10 @@ class AuthUploadAndSearchHardeningTest extends TestCase
         $admin = User::factory()->admin()->create();
         $product = Product::factory()->create();
 
-        $oversized = UploadedFile::fake()->image('gigante.jpg', 4100, 100);
+        $oversized = UploadedFile::fake()->createWithContent(
+            'gigante.png',
+            $this->buildMinimalPng(4100, 100),
+        );
 
         $this->actingAs($admin)
             ->post(route('admin.product-images.store', $product), [
@@ -87,7 +90,10 @@ class AuthUploadAndSearchHardeningTest extends TestCase
             ])
             ->assertSessionHasErrors('images.0');
 
-        $validImage = UploadedFile::fake()->image('nome-original-cliente.jpg', 600, 400);
+        $validImage = UploadedFile::fake()->createWithContent(
+            'nome-original-cliente.png',
+            $this->buildMinimalPng(1, 1),
+        );
 
         $this->actingAs($admin)
             ->post(route('admin.product-images.store', $product), [
@@ -99,8 +105,22 @@ class AuthUploadAndSearchHardeningTest extends TestCase
         $image = ProductImage::where('product_id', $product->id)->firstOrFail();
 
         $this->assertStringStartsWith("products/{$product->id}/", $image->path);
+        $this->assertStringEndsWith('.png', $image->path);
         $this->assertStringNotContainsString('nome-original-cliente', $image->path);
         Storage::disk('public')->assertExists($image->path);
+    }
+
+    private function buildMinimalPng(int $width = 1, int $height = 1): string
+    {
+        $ihdrData = pack('NNCCCCC', $width, $height, 8, 6, 0, 0, 0);
+        $ihdrChunk = pack('N', strlen($ihdrData)).'IHDR'.$ihdrData.pack('N', crc32('IHDR'.$ihdrData));
+
+        $rawPixel = "\x00\xff\x00\x00\xff";
+        $compressed = (string) gzcompress($rawPixel);
+        $idatChunk = pack('N', strlen($compressed)).'IDAT'.$compressed.pack('N', crc32('IDAT'.$compressed));
+        $iendChunk = pack('N', 0).'IEND'.pack('N', crc32('IEND'));
+
+        return "\x89PNG\r\n\x1a\n".$ihdrChunk.$idatChunk.$iendChunk;
     }
 
     public function test_password_defaults_enforce_max_length_and_production_complexity(): void

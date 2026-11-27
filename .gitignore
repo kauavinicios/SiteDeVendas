@@ -7,6 +7,7 @@
 /jandiraSite/.env
 /jandiraSite/.env.*
 !/jandiraSite/.env.example
+!/jandiraSite/.env.production.example
 
 /jandiraSite/storage/*.log
 /jandiraSite/storage/logs/*
@@ -47,6 +48,10 @@
 
 /jandiraSite/docker/postgresql/data/
 /jandiraSite/docker/logs/
+/jandiraSite/docker/caddy/data/
+/jandiraSite/docker/caddy/config/
+/jandiraSite/docker/nginx/letsencrypt/
+/backups/
 
 # ==========================================
 # IDE / Editor

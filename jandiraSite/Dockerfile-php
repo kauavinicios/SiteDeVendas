@@ -1,16 +1,105 @@
-FROM php:8.4-fpm-alpine
+FROM node:24-alpine AS assets
 
-RUN apk add --no-cache libpq postgresql-dev \
-    && docker-php-ext-install pdo pdo_pgsql \
-    && apk del postgresql-dev
+ARG VITE_APP_NAME="Butique da Jandira"
+ENV VITE_APP_NAME=${VITE_APP_NAME}
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY vite.config.js tsconfig.json components.json ./
+COPY resources ./resources
+COPY public ./public
+RUN npm run build
+
+FROM php:8.4-fpm-alpine AS base
+
+RUN apk add --no-cache \
+        libpq \
+        icu-libs \
+        libzip \
+        freetype \
+        libjpeg-turbo \
+        libpng \
+        libwebp \
+        fcgi \
+        su-exec \
+    && apk add --no-cache --virtual .build-deps \
+        $PHPIZE_DEPS \
+        postgresql-dev \
+        icu-dev \
+        libzip-dev \
+        freetype-dev \
+        libjpeg-turbo-dev \
+        libpng-dev \
+        libwebp-dev \
+        linux-headers \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j"$(nproc)" \
+        pdo \
+        pdo_pgsql \
+        gd \
+        opcache \
+        intl \
+        pcntl \
+        bcmath \
+        zip \
+        exif \
+    && apk del .build-deps
+
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-jandira.ini
+COPY docker/php/www.conf /usr/local/etc/php-fpm.d/zz-jandira.conf
+COPY docker/php/entrypoint.sh /usr/local/bin/jandira-entrypoint
+COPY docker/php/healthcheck.sh /usr/local/bin/jandira-healthcheck
+RUN chmod +x /usr/local/bin/jandira-entrypoint /usr/local/bin/jandira-healthcheck
 
 WORKDIR /var/www/html
-COPY . .
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+ENTRYPOINT ["jandira-entrypoint"]
 
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+FROM base AS composer_prod
 
-CMD ["php-fpm"]
+COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+COPY composer.json composer.lock ./
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --prefer-dist \
+    --no-scripts \
+    --no-autoloader
+
+FROM base AS development
+
+COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
+COPY docker/php/opcache-dev.ini /usr/local/etc/php/conf.d/99-opcache.ini
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 CMD ["jandira-healthcheck"]
+EXPOSE 9000
+
+FROM base AS production
+
+COPY docker/php/opcache-prod.ini /usr/local/etc/php/conf.d/99-opcache.ini
+COPY --from=composer:2.8 /usr/bin/composer /tmp/composer
+
+COPY --chown=www-data:www-data . .
+COPY --from=composer_prod --chown=www-data:www-data /var/www/html/vendor ./vendor
+COPY --from=assets --chown=www-data:www-data /app/public/build ./public/build
+
+RUN COMPOSER_ALLOW_SUPERUSER=1 /tmp/composer dump-autoload --no-dev --optimize --no-interaction \
+    && rm -f /tmp/composer \
+    && mkdir -p \
+        storage/framework/cache/data \
+        storage/framework/sessions \
+        storage/framework/views \
+        storage/logs \
+        storage/app/public \
+        bootstrap/cache \
+    && rm -rf public/storage \
+    && ln -s ../storage/app/public public/storage \
+    && php artisan package:discover --ansi \
+    && chown -R www-data:www-data storage bootstrap/cache public/storage
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=3 CMD ["jandira-healthcheck"]
+EXPOSE 9000

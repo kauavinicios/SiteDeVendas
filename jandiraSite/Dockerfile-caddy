@@ -1,0 +1,30 @@
+FROM node:24-alpine AS assets
+
+ARG VITE_APP_NAME="Butique da Jandira"
+ENV VITE_APP_NAME=${VITE_APP_NAME}
+
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY vite.config.js tsconfig.json components.json ./
+COPY resources ./resources
+COPY public ./public
+RUN npm run build
+
+FROM caddy:2.9-alpine AS base
+
+WORKDIR /var/www/html
+COPY docker/caddy/Caddyfile /etc/caddy/Caddyfile
+RUN caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 CMD wget -qO- http://127.0.0.1:2020/healthz >/dev/null 2>&1 || exit 1
+EXPOSE 80 443 443/udp
+
+FROM base AS development
+
+FROM base AS production
+
+COPY public ./public
+COPY --from=assets /app/public/build ./public/build
+RUN rm -rf public/storage && ln -s ../storage/app/public public/storage

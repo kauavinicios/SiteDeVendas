@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\SearchPattern;
+use App\Support\SecurityAudit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -81,6 +82,11 @@ class CustomerController extends Controller
         $nextActive = ! $user->active;
 
         $user->forceFill(['active' => $nextActive])->save();
+
+        SecurityAudit::record('customer.status_toggled', [
+            'target_user_id' => $user->id,
+            'active' => $user->active,
+        ]);
 
         $message = $nextActive
             ? 'Conta do cliente reativada com sucesso.'

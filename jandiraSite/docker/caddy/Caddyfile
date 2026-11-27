@@ -1,0 +1,49 @@
+{
+	admin off
+}
+
+# Endpoint interno de healthcheck (apenas loopback, independe de HTTP/HTTPS)
+http://127.0.0.1:2020 {
+	respond /healthz "ok" 200
+}
+
+{$SITE_ADDRESS::80} {
+	root * /var/www/html/public
+
+	encode zstd gzip
+
+	request_body {
+		max_size 64MB
+	}
+
+	# Remove assinatura do servidor (demais headers de segurança vêm do SecurityHeaders do Laravel)
+	header {
+		-Server
+		-X-Powered-By
+	}
+
+	# Bloqueia dotfiles (.env, .git, .htaccess, etc.), liberando /.well-known/
+	@hidden {
+		path /.* */.*
+		not path /.well-known/*
+	}
+	respond @hidden 404
+
+	# Defesa em profundidade: impede execução de PHP dentro de /storage/
+	@storagePhp path_regexp (?i)^/storage/.*\.ph(p[0-9]?|tml)$
+	respond @storagePhp 403
+
+	# Cache imutável de longo prazo para assets versionados pelo Vite
+	@viteAssets path /build/assets/*
+	header @viteAssets Cache-Control "public, max-age=31536000, immutable"
+
+	# Roteamento Laravel via PHP-FPM
+	php_fastcgi php:9000
+
+	file_server
+
+	log {
+		output stdout
+		format json
+	}
+}

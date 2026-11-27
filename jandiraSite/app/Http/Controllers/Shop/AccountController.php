@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Shop;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Support\EmailValidation;
+use App\Support\SecurityAudit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -140,6 +141,13 @@ class AccountController extends Controller
         ], [
             'password.required' => 'Informe sua senha atual para confirmar a exclusão.',
             'password.current_password' => 'A senha informada está incorreta.',
+        ]);
+
+        $hadOrders = $user->hasOrderHistory();
+
+        SecurityAudit::record('account.closed', [
+            'closed_user_id' => $user->id,
+            'had_orders' => $hadOrders,
         ]);
 
         Auth::guard('web')->logout();

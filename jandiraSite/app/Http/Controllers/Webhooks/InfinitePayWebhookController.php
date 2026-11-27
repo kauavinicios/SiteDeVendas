@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\InfinitePayService;
 use App\Services\OrderPaymentService;
 use App\Services\Payments\InfinitePayException;
+use App\Support\SecurityAudit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -19,6 +20,10 @@ class InfinitePayWebhookController extends Controller
         OrderPaymentService $orderPaymentService,
     ): JsonResponse {
         if (! $infinitePay->isValidWebhookSecret($secret)) {
+            SecurityAudit::record('webhook.invalid_secret', [
+                'provider' => 'infinitepay',
+            ], 'warning');
+
             return response()->json([
                 'ok' => false,
                 'message' => 'Invalid webhook secret.',

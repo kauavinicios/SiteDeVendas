@@ -16,18 +16,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $trustedProxies = trim((string) env('TRUSTED_PROXIES', ''));
-
-        if ($trustedProxies !== '') {
-            $proxies = $trustedProxies === '*'
-                ? '*'
-                : array_values(array_filter(array_map('trim', explode(',', $trustedProxies))));
-
-            if ($proxies !== []) {
-                $middleware->trustProxies(at: $proxies);
-            }
-        }
-
         $middleware->validateCsrfTokens(except: [
             'webhooks/infinitepay/*',
         ]);

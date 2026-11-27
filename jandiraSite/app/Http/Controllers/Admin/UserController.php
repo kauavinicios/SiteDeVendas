@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\UserStoreRequest;
 use App\Http\Requests\Admin\UserUpdateRequest;
 use App\Models\User;
 use App\Support\SearchPattern;
+use App\Support\SecurityAudit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -103,6 +104,12 @@ class UserController extends Controller
             'email_verified_at' => now(),
         ])->save();
 
+        SecurityAudit::record('staff.created', [
+            'target_user_id' => $user->id,
+            'role' => $user->role?->value,
+            'active' => $user->active,
+        ]);
+
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'Usuário da equipe cadastrado com sucesso.');
@@ -145,6 +152,12 @@ class UserController extends Controller
             'active' => $validated['active'],
         ])->save();
 
+        SecurityAudit::record('staff.updated', [
+            'target_user_id' => $user->id,
+            'role' => $user->role?->value,
+            'active' => $user->active,
+        ]);
+
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'Usuário atualizado com sucesso.');
@@ -165,6 +178,12 @@ class UserController extends Controller
         }
 
         $user->forceFill(['active' => $nextActive])->save();
+
+        SecurityAudit::record('staff.status_toggled', [
+            'target_user_id' => $user->id,
+            'role' => $user->role?->value,
+            'active' => $user->active,
+        ]);
 
         $message = $nextActive
             ? 'Usuário reativado com sucesso.'

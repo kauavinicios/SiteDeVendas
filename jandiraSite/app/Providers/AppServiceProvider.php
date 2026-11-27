@@ -4,10 +4,14 @@ namespace App\Providers;
 
 use App\Enums\Permission;
 use App\Models\User;
+use App\Support\SecurityAudit;
+use Illuminate\Auth\Events\Lockout;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
@@ -38,6 +42,14 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isProduction() || str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceScheme('https');
         }
+
+        Event::listen(Lockout::class, function (Lockout $event): void {
+            $rawEmail = Str::lower(trim((string) $event->request->input('email', '')));
+
+            SecurityAudit::record('auth.lockout', [
+                'email_hash' => $rawEmail !== '' ? hash('sha256', $rawEmail) : null,
+            ], 'warning');
+        });
 
         Gate::before(function (User $user): ?bool {
             if (! $user->active) {
