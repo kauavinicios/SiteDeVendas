@@ -1,53 +1,118 @@
-version: '3.8'
-networks:
-  webapp:
-    driver: bridge
+name: jandira
+
+x-php-service: &php-service
+  image: jandira-php:${IMAGE_TAG:-prod}
+  build:
+    context: .
+    dockerfile: Dockerfile-php
+    target: ${APP_BUILD_TARGET:-production}
+    args:
+      VITE_APP_NAME: ${VITE_APP_NAME:-Butique da Jandira}
+  env_file:
+    - .env
+  volumes:
+    - storage_public:/var/www/html/storage/app/public
+    - storage_private:/var/www/html/storage/app/private
+    - storage_logs:/var/www/html/storage/logs
+  depends_on:
+    postgres:
+      condition: service_healthy
+  networks:
+    - webapp
 
 services:
-  nginx:
-    build:
-      context: .
-      dockerfile: Dockerfile-nginx
-    container_name: nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-jandiraDB}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD no arquivo .env}
     volumes:
-      - ./docker/nginx:/etc/nginx:ro
-      - code_volume:/var/www/html:ro
-      - ./docker/logs/nginx:/var/log/nginx
-      - ./docker/nginx/letsencrypt:/etc/letsencrypt
-    depends_on:
-      - php
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     networks:
       - webapp
 
   php:
+    <<: *php-service
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      CONTAINER_ROLE: app
+    healthcheck:
+      test: ["CMD", "jandira-healthcheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  worker:
+    <<: *php-service
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      CONTAINER_ROLE: worker
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD-SHELL", "ps | grep -q '[q]ueue:work'"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  scheduler:
+    <<: *php-service
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      CONTAINER_ROLE: scheduler
+    stop_grace_period: 15s
+    healthcheck:
+      test: ["CMD-SHELL", "ps | grep -q '[s]chedule:work'"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  caddy:
+    image: jandira-caddy:${IMAGE_TAG:-prod}
     build:
       context: .
-      dockerfile: Dockerfile-php
-    container_name: php
-    restart: unless-stopped
+      dockerfile: Dockerfile-caddy
+      target: ${APP_BUILD_TARGET:-production}
+      args:
+        VITE_APP_NAME: ${VITE_APP_NAME:-Butique da Jandira}
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
     volumes:
-      - code_volume:/var/www/html
+      - storage_public:/var/www/html/storage/app/public:ro
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
-      - postgres
+      php:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:2020/healthz >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - webapp
 
-  postgres:
-    image: postgres:18-alpine
-    container_name: postgres
-    restart: unless-stopped
-    volumes:
-      - ./docker/postgresql/data:/var/lib/postgresql
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: strongpassword
-      POSTGRES_DB: jandiraDB
-    networks:
-      - webapp
+networks:
+  webapp:
+    driver: bridge
 
 volumes:
-  code_volume:
+  postgres_data: {}
+  storage_public: {}
+  storage_private: {}
+  storage_logs: {}
+  caddy_data: {}
+  caddy_config: {}
