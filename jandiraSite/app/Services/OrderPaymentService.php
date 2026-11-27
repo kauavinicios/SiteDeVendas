@@ -11,6 +11,7 @@ use App\Models\ProductVariant;
 use App\Services\Payments\InfinitePayException;
 use App\Services\Payments\PaymentCheckResult;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class OrderPaymentService
@@ -30,9 +31,16 @@ class OrderPaymentService
         ?string $webhookUrl = null,
         array $extraOptions = [],
     ): PaymentTransaction {
-        $link = $this->infinitePay->createCheckoutLink($order, $redirectUrl, $webhookUrl, $extraOptions);
+        $returnToken = Str::random(40);
+        $returnTokenHash = hash('sha256', $returnToken);
 
-        return DB::transaction(function () use ($order, $link): PaymentTransaction {
+        $redirectUrlWithToken = filled($redirectUrl)
+            ? $this->appendQueryParam(trim((string) $redirectUrl), 'rt', $returnToken)
+            : null;
+
+        $link = $this->infinitePay->createCheckoutLink($order, $redirectUrlWithToken, $webhookUrl, $extraOptions);
+
+        return DB::transaction(function () use ($order, $link, $returnTokenHash): PaymentTransaction {
             $transaction = PaymentTransaction::create([
                 'order_id' => $order->id,
                 'provider' => 'infinitepay',
@@ -40,6 +48,7 @@ class OrderPaymentService
                 'auth_mode' => $link->authMode,
                 'order_nsu' => $link->orderNsu,
                 'slug' => $link->slug,
+                'return_token_hash' => $returnTokenHash,
                 'checkout_url' => $link->url,
                 'status' => PaymentTransactionStatus::Pending,
                 'amount_cents' => $link->amountCents,
@@ -376,5 +385,12 @@ class OrderPaymentService
         }
 
         $lockedOrder->stock_deducted_at = null;
+    }
+
+    private function appendQueryParam(string $url, string $key, string $value): string
+    {
+        $separator = str_contains($url, '?') ? '&' : '?';
+
+        return $url.$separator.rawurlencode($key).'='.rawurlencode($value);
     }
 }

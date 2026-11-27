@@ -16,6 +16,7 @@ class PaymentTransaction extends Model
         'auth_mode',
         'order_nsu',
         'slug',
+        'return_token_hash',
         'transaction_nsu',
         'checkout_url',
         'receipt_url',
@@ -28,6 +29,13 @@ class PaymentTransaction extends Model
         'last_checked_at',
         'raw_create_payload',
         'raw_last_check_payload',
+    ];
+
+    /**
+     * @var list<string>
+     */
+    protected $hidden = [
+        'return_token_hash',
     ];
 
     protected function casts(): array
@@ -59,6 +67,17 @@ class PaymentTransaction extends Model
     public function isPaid(): bool
     {
         return $this->status === PaymentTransactionStatus::Paid || $this->paid_at !== null;
+    }
+
+    public function matchesReturnToken(?string $token): bool
+    {
+        $provided = trim((string) $token);
+
+        if ($provided === '' || ! is_string($this->return_token_hash) || $this->return_token_hash === '') {
+            return false;
+        }
+
+        return hash_equals($this->return_token_hash, hash('sha256', $provided));
     }
 
     public function amountInReais(): float

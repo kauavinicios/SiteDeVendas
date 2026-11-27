@@ -72,9 +72,11 @@ Route::post('/pedidos', [OrderController::class, 'store'])
     ->name('orders.store');
 
 Route::get('/checkout/retorno', CheckoutReturnController::class)
+    ->middleware('throttle:30,1')
     ->name('checkout.return');
 
 Route::post('/webhooks/infinitepay/{secret}', InfinitePayWebhookController::class)
+    ->middleware('throttle:60,1')
     ->name('webhooks.infinitepay');
 
 Route::post('/alertas-estoque', [StockAlertController::class, 'store'])

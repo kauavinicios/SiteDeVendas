@@ -162,6 +162,15 @@ class OrderController extends Controller
 
         $cart->clear();
 
+        if ($transaction->slug) {
+            $recentSlugs = array_values(array_unique(array_merge(
+                (array) $request->session()->get('checkout_transaction_slugs', []),
+                [$transaction->slug],
+            )));
+
+            $request->session()->put('checkout_transaction_slugs', array_slice($recentSlugs, -20));
+        }
+
         return response()->json([
             'success' => true,
             'message' => "Pedido {$order->code} registrado! Redirecionando para o pagamento seguro...",

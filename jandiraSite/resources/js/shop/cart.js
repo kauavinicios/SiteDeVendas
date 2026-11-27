@@ -538,16 +538,32 @@ async function submitOrderCheckout(checkoutForm) {
             total: 0,
         });
 
-        showOrderConfirmation(data.order, data.checkout_url, data.whatsapp_url);
+        const safeCheckoutUrl = isSafeCheckoutUrl(data.checkout_url) ? data.checkout_url : null;
 
-        if (data.checkout_url) {
-            window.location.assign(data.checkout_url);
+        showOrderConfirmation(data.order, safeCheckoutUrl, data.whatsapp_url);
+
+        if (safeCheckoutUrl) {
+            window.location.assign(safeCheckoutUrl);
         }
     } catch (error) {
         showCartMessage(error.message, 'error');
     } finally {
         checkoutButton.disabled = false;
         checkoutButton.textContent = originalText;
+    }
+}
+
+function isSafeCheckoutUrl(rawUrl) {
+    if (typeof rawUrl !== 'string' || rawUrl.trim() === '') {
+        return false;
+    }
+
+    try {
+        const parsed = new URL(rawUrl, window.location.origin);
+
+        return parsed.protocol === 'https:' || parsed.origin === window.location.origin;
+    } catch {
+        return false;
     }
 }
 

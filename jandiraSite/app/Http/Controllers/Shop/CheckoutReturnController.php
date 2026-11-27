@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Shop;
 
+use App\Enums\Permission;
 use App\Http\Controllers\Controller;
+use App\Models\PaymentTransaction;
 use App\Services\OrderPaymentService;
 use App\Services\Payments\InfinitePayException;
 use Illuminate\Http\Request;
@@ -22,40 +24,74 @@ class CheckoutReturnController extends Controller
             transactionNsu: $transactionNsu !== '' ? $transactionNsu : null,
         );
 
+        if ($transaction === null || ! $this->canAccessTransaction($request, $transaction)) {
+            return view('checkout.return', [
+                'transaction' => null,
+                'order' => null,
+                'verificationWarning' => null,
+            ]);
+        }
+
         $verificationWarning = null;
 
-        if ($transaction !== null) {
-            try {
-                $transaction = $orderPaymentService->verifyAndSyncTransaction(
-                    transaction: $transaction,
-                    transactionNsu: $transactionNsu !== '' ? $transactionNsu : null,
-                    source: 'redirect_return',
-                    triggerPayload: $request->query(),
-                );
-            } catch (InfinitePayException $exception) {
-                $orderPaymentService->recordEvent(
-                    transaction: $transaction,
-                    order: $transaction->order,
-                    source: 'redirect_return',
-                    eventType: 'payment.check_failed',
-                    payload: [
-                        'query' => $request->query(),
-                        'response' => $exception->responseBody,
-                    ],
-                    externalEventId: $transactionNsu !== '' ? $transactionNsu : $transaction->slug,
-                    notes: $exception->getMessage(),
-                );
+        try {
+            $transaction = $orderPaymentService->verifyAndSyncTransaction(
+                transaction: $transaction,
+                transactionNsu: $transactionNsu !== '' ? $transactionNsu : null,
+                source: 'redirect_return',
+                triggerPayload: $request->query(),
+            );
+        } catch (InfinitePayException $exception) {
+            $orderPaymentService->recordEvent(
+                transaction: $transaction,
+                order: $transaction->order,
+                source: 'redirect_return',
+                eventType: 'payment.check_failed',
+                payload: [
+                    'query' => $request->query(),
+                    'response' => $exception->responseBody,
+                ],
+                externalEventId: $transactionNsu !== '' ? $transactionNsu : $transaction->slug,
+                notes: $exception->getMessage(),
+            );
 
-                $verificationWarning = 'Ainda estamos aguardando a confirmação da InfinitePay. Atualize em alguns instantes.';
-            }
-
-            $transaction->load(['order.items']);
+            $verificationWarning = 'Ainda estamos aguardando a confirmação da InfinitePay. Atualize em alguns instantes.';
         }
+
+        $transaction->load(['order.items']);
 
         return view('checkout.return', [
             'transaction' => $transaction,
-            'order' => $transaction?->order,
+            'order' => $transaction->order,
             'verificationWarning' => $verificationWarning,
         ]);
+    }
+
+    private function canAccessTransaction(Request $request, PaymentTransaction $transaction): bool
+    {
+        $transaction->loadMissing('order');
+        $user = $request->user();
+        $order = $transaction->order;
+
+        if ($user !== null) {
+            if ($order !== null && $order->user_id !== null && $user->id === $order->user_id) {
+                return true;
+            }
+
+            if ($user->hasPermission(Permission::ViewOrders)) {
+                return true;
+            }
+        }
+
+        if ($transaction->matchesReturnToken($request->string('rt')->toString())) {
+            return true;
+        }
+
+        $sessionSlugs = array_map(
+            'strval',
+            (array) $request->session()->get('checkout_transaction_slugs', []),
+        );
+
+        return $transaction->slug !== null && in_array($transaction->slug, $sessionSlugs, true);
     }
 }

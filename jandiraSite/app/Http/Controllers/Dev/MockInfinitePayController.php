@@ -58,6 +58,7 @@ class MockInfinitePayController extends Controller
 
         $action = $validated['action'];
         $existingCache = is_array($cached) ? $cached : [];
+        $returnToken = $this->extractReturnToken((string) ($existingCache['redirect_url'] ?? ''));
 
         if ($action === 'cancel') {
             Cache::put($infinitePay->mockCacheKey($slug), array_merge($existingCache, [
@@ -72,10 +73,11 @@ class MockInfinitePayController extends Controller
                 'receipt_url' => null,
             ]), now()->addHours(6));
 
-            return redirect()->route('checkout.return', [
+            return redirect()->route('checkout.return', array_filter([
                 'order_nsu' => $orderNsu,
                 'slug' => $slug,
-            ]);
+                'rt' => $returnToken,
+            ]));
         }
 
         [$captureMethod, $installments] = match ($action) {
@@ -99,13 +101,14 @@ class MockInfinitePayController extends Controller
             'receipt_url' => $receiptUrl,
         ]), now()->addHours(6));
 
-        return redirect()->route('checkout.return', [
+        return redirect()->route('checkout.return', array_filter([
             'order_nsu' => $orderNsu,
             'slug' => $slug,
             'transaction_nsu' => $transactionNsu,
             'capture_method' => $captureMethod,
             'receipt_url' => $receiptUrl,
-        ]);
+            'rt' => $returnToken,
+        ]));
     }
 
     public function receipt(string $slug, InfinitePayService $infinitePay): View
@@ -133,5 +136,24 @@ class MockInfinitePayController extends Controller
     private function ensureSimulatorEnabled(InfinitePayService $infinitePay): void
     {
         abort_unless(app()->environment(['local', 'testing']) && $infinitePay->isMock(), 404);
+    }
+
+    private function extractReturnToken(string $redirectUrl): ?string
+    {
+        if ($redirectUrl === '') {
+            return null;
+        }
+
+        $queryString = (string) parse_url($redirectUrl, PHP_URL_QUERY);
+
+        if ($queryString === '') {
+            return null;
+        }
+
+        parse_str($queryString, $query);
+
+        $token = $query['rt'] ?? null;
+
+        return is_string($token) && trim($token) !== '' ? trim($token) : null;
     }
 }
