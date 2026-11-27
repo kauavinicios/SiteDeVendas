@@ -90,15 +90,17 @@ class UserController extends Controller
     {
         $validated = $request->validated();
 
-        User::create([
+        $user = new User;
+        $user->fill([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => filled($validated['phone'] ?? null) ? trim($validated['phone']) : null,
+            'password' => Hash::make($validated['password']),
+        ])->forceFill([
             'role' => $validated['role'],
             'active' => $validated['active'],
-            'password' => Hash::make($validated['password']),
             'email_verified_at' => now(),
-        ]);
+        ])->save();
 
         return redirect()
             ->route('admin.users.index')
@@ -131,15 +133,16 @@ class UserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => filled($validated['phone'] ?? null) ? trim($validated['phone']) : null,
-            'role' => $validated['role'],
-            'active' => $validated['active'],
         ];
 
         if (filled($validated['password'] ?? null)) {
             $payload['password'] = Hash::make($validated['password']);
         }
 
-        $user->update($payload);
+        $user->fill($payload)->forceFill([
+            'role' => $validated['role'],
+            'active' => $validated['active'],
+        ])->save();
 
         return redirect()
             ->route('admin.users.index')
@@ -160,7 +163,7 @@ class UserController extends Controller
             return back()->with('error', 'O sistema precisa manter pelo menos um administrador ativo.');
         }
 
-        $user->update(['active' => $nextActive]);
+        $user->forceFill(['active' => $nextActive])->save();
 
         $message = $nextActive
             ? 'Usuário reativado com sucesso.'

@@ -57,20 +57,22 @@ class RegisteredUserController extends Controller
         $marketingOptIn = $request->boolean('marketing_opt_in');
         $acceptedAt = now();
 
-        $user = User::create([
+        $user = new User;
+        $user->fill([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => filled($validated['phone'] ?? null) ? trim($validated['phone']) : null,
             'password' => Hash::make($validated['password']),
-            'role' => UserRole::Customer,
-            'active' => true,
             'marketing_opt_in' => $marketingOptIn,
             'marketing_opt_in_at' => $marketingOptIn ? $acceptedAt : null,
             'terms_accepted_at' => $acceptedAt,
             'terms_version' => LegalDocuments::TERMS_VERSION,
             'privacy_accepted_at' => $acceptedAt,
             'privacy_version' => LegalDocuments::PRIVACY_VERSION,
-        ]);
+        ])->forceFill([
+            'role' => UserRole::Customer,
+            'active' => true,
+        ])->save();
 
         event(new Registered($user));
 

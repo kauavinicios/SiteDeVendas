@@ -23,6 +23,7 @@ class ContactMessage extends Model
     protected function casts(): array
     {
         return [
+            'message' => 'encrypted',
             'read_at' => 'datetime',
         ];
     }

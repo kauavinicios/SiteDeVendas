@@ -29,8 +29,7 @@ class ContactMessageController extends Controller
                         ->where('name', 'ilike', $pattern)
                         ->orWhere('email', 'ilike', $pattern)
                         ->orWhere('phone', 'ilike', $pattern)
-                        ->orWhere('subject', 'ilike', $pattern)
-                        ->orWhere('message', 'ilike', $pattern);
+                        ->orWhere('subject', 'ilike', $pattern);
                 });
             })
             ->when($status === 'nao-lidas', fn ($query) => $query->whereNull('read_at'))

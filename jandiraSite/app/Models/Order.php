@@ -38,6 +38,7 @@ class Order extends Model
             'total' => 'decimal:2',
             'total_cost' => 'decimal:2',
             'items_count' => 'integer',
+            'notes' => 'encrypted',
             'stock_deducted_at' => 'datetime',
             'confirmed_at' => 'datetime',
             'cancelled_at' => 'datetime',

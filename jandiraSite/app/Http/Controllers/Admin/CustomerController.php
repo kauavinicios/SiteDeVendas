@@ -79,7 +79,7 @@ class CustomerController extends Controller
 
         $nextActive = ! $user->active;
 
-        $user->update(['active' => $nextActive]);
+        $user->forceFill(['active' => $nextActive])->save();
 
         $message = $nextActive
             ? 'Conta do cliente reativada com sucesso.'

@@ -51,22 +51,21 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($users as $data) {
-            User::updateOrCreate(
-                ['email' => $data['email']],
-                [
-                    'name' => $data['name'],
-                    'email_verified_at' => now(),
-                    'password' => Hash::make('12345678'),
-                    'role' => $data['role'],
-                    'active' => true,
-                    'marketing_opt_in' => $data['marketing_opt_in'],
-                    'marketing_opt_in_at' => $data['marketing_opt_in_at'],
-                    'terms_accepted_at' => now(),
-                    'terms_version' => LegalDocuments::TERMS_VERSION,
-                    'privacy_accepted_at' => now(),
-                    'privacy_version' => LegalDocuments::PRIVACY_VERSION,
-                ]
-            );
+            $user = User::firstOrNew(['email' => $data['email']]);
+
+            $user->forceFill([
+                'name' => $data['name'],
+                'email_verified_at' => now(),
+                'password' => Hash::make('12345678'),
+                'role' => $data['role'],
+                'active' => true,
+                'marketing_opt_in' => $data['marketing_opt_in'],
+                'marketing_opt_in_at' => $data['marketing_opt_in_at'],
+                'terms_accepted_at' => now(),
+                'terms_version' => LegalDocuments::TERMS_VERSION,
+                'privacy_accepted_at' => now(),
+                'privacy_version' => LegalDocuments::PRIVACY_VERSION,
+            ])->save();
         }
 
         $this->call([

@@ -182,7 +182,7 @@ export default function MessagesIndex({ messages, stats, filters }: Props) {
                                     type="search"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    placeholder="Buscar por nome, e-mail, assunto ou mensagem..."
+                                    placeholder="Buscar por nome, e-mail, telefone ou assunto..."
                                     className="h-10 w-full rounded-xl border border-[var(--admin-border)] bg-[var(--admin-background)] pr-3 pl-9 text-sm text-[var(--admin-text)] outline-none focus:border-[var(--admin-primary)]"
                                 />
                             </div>

@@ -34,13 +34,15 @@ class PaymentTransaction extends Model
     {
         return [
             'status' => PaymentTransactionStatus::class,
+            'checkout_url' => 'encrypted',
+            'receipt_url' => 'encrypted',
             'installments' => 'integer',
             'amount_cents' => 'integer',
             'paid_amount_cents' => 'integer',
             'paid_at' => 'datetime',
             'last_checked_at' => 'datetime',
-            'raw_create_payload' => 'array',
-            'raw_last_check_payload' => 'array',
+            'raw_create_payload' => 'encrypted:array',
+            'raw_last_check_payload' => 'encrypted:array',
         ];
     }
 

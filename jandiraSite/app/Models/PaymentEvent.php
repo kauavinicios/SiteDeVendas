@@ -22,7 +22,7 @@ class PaymentEvent extends Model
     protected function casts(): array
     {
         return [
-            'payload' => 'array',
+            'payload' => 'encrypted:array',
             'processed_at' => 'datetime',
         ];
     }
