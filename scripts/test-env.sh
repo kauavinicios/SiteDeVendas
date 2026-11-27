@@ -12,13 +12,13 @@
 #   Env file  : jandiraSite/.env.homolog (gerado automaticamente, ignorado pelo Git)
 #
 # Uso:
-#   scripts/test-env.sh up       Sobe o banco, gera .env.homolog e roda migrate:fresh --seed
-#   scripts/test-env.sh serve    Inicia o servidor em http://127.0.0.1:8000 (APP_ENV=homolog)
-#   scripts/test-env.sh start    up + serve; ao sair (Ctrl+C) o container é removido
-#   scripts/test-env.sh reset    Recria o banco de homologação (migrate:fresh --seed)
-#   scripts/test-env.sh test     Roda "php artisan test" (aceita argumentos extras)
-#   scripts/test-env.sh down     Para e remove o container (dados descartados)
-#   scripts/test-env.sh status   Mostra o estado do container
+#   scripts/test-env.sh up              Sobe o banco, gera .env.homolog e roda migrate:fresh --seed
+#   scripts/test-env.sh serve           Inicia o servidor em http://127.0.0.1:8000 (APP_ENV=homolog)
+#   scripts/test-env.sh start           up + serve; ao sair (Ctrl+C) o container é removido
+#   scripts/test-env.sh reset           Recria o banco de homologação (migrate:fresh --seed)
+#   scripts/test-env.sh test [--docker] Roda "php artisan test" no host ou na imagem PHP 8.4 Docker
+#   scripts/test-env.sh down            Para e remove o container (dados descartados)
+#   scripts/test-env.sh status          Mostra o estado do container
 #
 # Variáveis opcionais: TEST_DB_PORT (5433), SERVE_HOST (127.0.0.1), SERVE_PORT (8000)
 
@@ -66,6 +66,9 @@ db_up() {
     if container_running "$CONTAINER"; then
         info "Container '$CONTAINER' já está em execução"
     else
+        if container_exists "$CONTAINER"; then
+            docker rm -f "$CONTAINER" >/dev/null
+        fi
         step "Subindo PostgreSQL temporário ($CONTAINER, porta $DB_PORT)..."
         docker run -d --rm \
             --name "$CONTAINER" \
@@ -104,6 +107,7 @@ prepare_env_file() {
     env_set DB_DATABASE "$DB_HOMOLOG" "$ENV_FILE"
     env_set DB_USERNAME "$DB_USER" "$ENV_FILE"
     env_set DB_PASSWORD "$DB_PASS" "$ENV_FILE"
+    env_set SESSION_ENCRYPT true "$ENV_FILE"
 
     if [[ -z "$(env_get APP_KEY "$ENV_FILE")" ]]; then
         artisan_homolog key:generate --ansi
@@ -141,6 +145,22 @@ cmd_start() {
 
 cmd_test() {
     container_running "$CONTAINER" || fail "Banco temporário não está rodando. Rode: scripts/test-env.sh up"
+
+    if [[ "${1:-}" == "--docker" ]]; then
+        shift
+        if ! docker image inspect jandira-php:dev >/dev/null 2>&1; then
+            step "Construindo imagem jandira-php:dev para testes..."
+            docker build -f "$APP_DIR/Dockerfile-php" --target development -t jandira-php:dev "$APP_DIR"
+        fi
+        docker run --rm --network host \
+            -v "$APP_DIR:/var/www/html" \
+            -w /var/www/html \
+            -e DB_HOST=127.0.0.1 \
+            -e DB_PORT="$DB_PORT" \
+            jandira-php:dev php artisan test "$@"
+        return
+    fi
+
     (cd "$APP_DIR" && php artisan test "$@")
 }
 

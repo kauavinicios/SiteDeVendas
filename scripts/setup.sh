@@ -35,6 +35,12 @@ cd "$APP_DIR"
 
 step "[1/6] Verificando pré-requisitos..."
 require_commands php composer npm
+php -r 'exit(version_compare(PHP_VERSION, "8.3.0", ">=") ? 0 : 1);' \
+    || fail "PHP 8.3 ou superior é obrigatório (encontrado: $(php -r 'echo PHP_VERSION;'))."
+php -m | grep -qi '^pdo_pgsql$' \
+    || warn "Extensão PHP 'pdo_pgsql' ausente no host; instale php-pgsql ou use scripts/docker.sh up."
+php -m | grep -qi '^gd$' \
+    || warn "Extensão PHP 'gd' ausente no host: uploads funcionam, mas sem remoção de EXIF (scripts/docker.sh up já inclui ext-gd)."
 if [[ "${SKIP_DB:-0}" != "1" ]]; then
     require_commands docker
 fi
@@ -45,6 +51,9 @@ if [[ ! -f "$ENV_FILE" ]]; then
     info "Criado .env a partir do .env.example"
 else
     info ".env já existe — mantido sem alterações"
+    if [[ "$(env_get SESSION_ENCRYPT "$ENV_FILE")" != "true" ]]; then
+        warn "Recomendado definir SESSION_ENCRYPT=true no jandiraSite/.env."
+    fi
 fi
 
 step "[3/6] Instalando dependências e compilando o frontend..."
@@ -103,4 +112,4 @@ step "[6/6] Executando migrations, seeders e storage:link..."
 php artisan migrate --seed --ansi
 php artisan storage:link --ansi || true
 
-success "Configuração concluída! Rode: cd jandiraSite && composer dev"
+success "Configuração concluída! Host: cd jandiraSite && composer dev | 100% Docker: scripts/docker.sh up"

@@ -8,6 +8,7 @@
 # ---------------------------------------------------------------------------
 step()    { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 info()    { printf '    %s\n' "$*"; }
+warn()    { printf '\033[1;33m⚠ %s\033[0m\n' "$*"; }
 success() { printf '\n\033[1;32m✔ %s\033[0m\n' "$*"; }
 fail()    { printf '\n\033[1;31m✖ %s\033[0m\n' "$*" >&2; exit 1; }
 
@@ -21,25 +22,38 @@ require_commands() {
     done
 }
 
+require_docker_compose() {
+    require_commands docker
+    docker compose version >/dev/null 2>&1 || fail "Plugin 'docker compose' não encontrado. Atualize o Docker."
+}
+
 # ---------------------------------------------------------------------------
 # Arquivos .env
 # ---------------------------------------------------------------------------
 
-# env_get CHAVE ARQUIVO -> imprime o valor (sem aspas) ou vazio
+# env_get CHAVE ARQUIVO -> imprime o valor (sem aspas simples/duplas) ou vazio
 env_get() {
     local key="$1" file="$2" value
     [[ -f "$file" ]] || return 0
     value="$(grep -E "^${key}=" "$file" | tail -n 1 | cut -d '=' -f 2- || true)"
-    value="${value%\"}"; value="${value#\"}"
+    if [[ "$value" == \"*\" && "$value" == *\" ]]; then
+        value="${value#\"}"
+        value="${value%\"}"
+    elif [[ "$value" == \'*\' && "$value" == *\' ]]; then
+        value="${value#\'}"
+        value="${value%\'}"
+    fi
     printf '%s' "$value"
 }
 
 # env_set CHAVE VALOR ARQUIVO -> substitui a linha (ou adiciona no fim)
+# Usa ENVIRON no awk para não interpretar '\' nem '&' no valor.
 env_set() {
     local key="$1" value="$2" file="$3" tmp
     tmp="$(mktemp)"
     if grep -qE "^#? ?${key}=" "$file"; then
-        awk -v k="$key" -v v="$value" '
+        ENV_KEY="$key" ENV_VAL="$value" awk '
+            BEGIN { k = ENVIRON["ENV_KEY"]; v = ENVIRON["ENV_VAL"] }
             !done && $0 ~ "^#? ?" k "=" { print k "=" v; done = 1; next }
             { print }
         ' "$file" > "$tmp"
@@ -60,7 +74,7 @@ random_password() {
 }
 
 # ---------------------------------------------------------------------------
-# Docker / PostgreSQL
+# Docker / PostgreSQL / Compose
 # ---------------------------------------------------------------------------
 container_exists()  { [[ -n "$(docker ps -aq -f "name=^${1}$")" ]]; }
 container_running() { [[ -n "$(docker ps -q -f "name=^${1}$")" ]]; }
@@ -80,4 +94,25 @@ wait_for_postgres() {
         fi
     done
     info "PostgreSQL pronto (${elapsed}s)"
+}
+
+compose_dev() {
+    docker compose --project-directory "$APP_DIR" \
+        -f "$APP_DIR/docker-compose.yml" \
+        -f "$APP_DIR/docker-compose.dev.yml" "$@"
+}
+
+compose_prod() {
+    docker compose --project-directory "$APP_DIR" \
+        -f "$APP_DIR/docker-compose.yml" \
+        -f "$APP_DIR/docker-compose.prod.yml" "$@"
+}
+
+compose_service_running() {
+    local mode="$1" service="$2"
+    if [[ "$mode" == "prod" ]]; then
+        compose_prod ps --status running --services 2>/dev/null | grep -qx "$service"
+    else
+        compose_dev ps --status running --services 2>/dev/null | grep -qx "$service"
+    fi
 }
